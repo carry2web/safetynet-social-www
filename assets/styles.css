@@ -1,0 +1,157 @@
+:root {
+  --bg:     #0b1220;
+  --txt:    #e9eefb;
+  --muted:  #9db0d1;
+  --brand:  #5dd0ff;
+  --card:   #ffffff10;
+  --border: #ffffff22;
+  --ink:    #06121f;
+  --link:   #5dd0ff;
+}
+
+* { box-sizing: border-box }
+html, body { height: 100% }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--txt);
+  font: 16px/1.55 ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu;
+}
+img { max-width: 100%; height: auto }
+a { color: var(--link); text-decoration: none }
+a:hover { text-decoration: underline }
+
+/* Layout */
+.container { max-width: 1080px; margin-inline: auto; padding-inline: 1rem }
+
+/* Header */
+.header {
+  position: sticky;
+  top: 0;
+  background: rgba(11,18,32,.8);
+  backdrop-filter: saturate(120%) blur(6px);
+  border-bottom: 1px solid var(--border);
+  z-index: 10;
+}
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .75rem 0;
+}
+.brand { display: flex; align-items: center; gap: .6rem }
+.brand img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid var(--brand) }
+.brand .title { font-weight: 700; letter-spacing: .2px }
+.nav { display: flex; gap: .9rem; flex-wrap: wrap }
+.nav a { padding: .45rem .7rem; border-radius: 10px }
+.nav a.active,
+.nav a[aria-current="page"] { background: var(--card); border: 1px solid var(--border) }
+
+/* Main & Footer */
+.main { padding-block: 2rem }
+.footer { padding: 2rem 0; border-top: 1px solid var(--border); color: var(--muted) }
+
+/* Cards */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+}
+
+/* Hero */
+.hero { display: grid; grid-template-columns: 160px 1fr; gap: 1rem; align-items: center }
+.hero .logo { width: 120px; height: 120px; border-radius: 50%; border: 2px solid var(--brand) }
+
+/* Meta row */
+.meta { display: flex; flex-wrap: wrap; gap: .5rem 1rem; color: var(--muted) }
+
+/* Buttons */
+.btn { display: inline-block; padding: .6rem .95rem; border-radius: 12px; font-weight: 700 }
+.btn-primary { background: var(--brand); color: var(--ink) }
+.btn-ghost { background: transparent; border: 1px solid var(--brand); color: var(--brand) }
+.btn-row { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .6rem }
+
+/* Utilities */
+.muted { color: var(--muted) }
+.mt-0 { margin-top: 0 }    .mb-0 { margin-bottom: 0 }
+.mt-2 { margin-top: .5rem } .mb-2 { margin-bottom: .5rem }
+.mt-4 { margin-top: 1rem }  .mb-4 { margin-bottom: 1rem }
+.mt-6 { margin-top: 1.5rem }
+
+/* Grid */
+.grid { display: grid }
+.grid-2 { grid-template-columns: 1fr 1fr }
+.gap-4 { gap: 1rem }
+
+/* Donate box — fixed: was using hardcoded colours */
+.donate-box {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .5rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: .75rem;
+  background: var(--card);
+}
+.donate-box p { margin: .1rem 0 }
+
+/* Social chips */
+.social { display: flex; flex-wrap: wrap; gap: .6rem; margin-top: .75rem }
+.social a {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  padding: .5rem .75rem;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--card);
+  text-decoration: none;
+}
+.social a:hover { text-decoration: none; border-color: #ffffff55 }
+.social svg { width: 18px; height: 18px; display: block }
+
+/* Accessibility */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* Team grid */
+.team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem }
+.team-card {
+  display: flex;
+  gap: .9rem;
+  align-items: center;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: .85rem;
+}
+/* Fixed: was hardcoded #0b1220 */
+.team-card .avatar {
+  width: 56px; height: 56px;
+  border-radius: 50%;
+  border: 2px solid var(--brand);
+  background: var(--bg);
+}
+.team-card .info { display: flex; flex-direction: column }
+.role { color: var(--muted); font-size: .95rem }
+.contributors { display: flex; flex-wrap: wrap; gap: .5rem }
+.contributors a {
+  padding: .35rem .6rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card);
+  text-decoration: none;
+}
+
+/* Responsive */
+@media (max-width: 980px) { .team-grid { grid-template-columns: repeat(2, 1fr) } }
+@media (max-width: 860px) {
+  .hero { grid-template-columns: 1fr; text-align: center }
+  .donate-box { grid-template-columns: 1fr }
+}
+@media (max-width: 640px) { .team-grid { grid-template-columns: 1fr } }

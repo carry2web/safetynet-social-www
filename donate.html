@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SafetyNet — Donate</title>
+  <meta name="description" content="Support SafetyNet Foundation with a SEPA bank transfer. Your donation helps fund community-owned DeSo validators and decentralized infrastructure." />
+  <link rel="canonical" href="https://www.safetynet.social/donate.html" />
+
+  <meta property="og:type"         content="website" />
+  <meta property="og:site_name"    content="SafetyNet" />
+  <meta property="og:url"          content="https://www.safetynet.social/donate.html" />
+  <meta property="og:title"        content="Donate to SafetyNet Foundation" />
+  <meta property="og:description"  content="Support community-owned DeSo infrastructure with a SEPA bank transfer. IBAN BE96 9055 9543 4305 — Wise, Netherlands." />
+  <meta property="og:image"        content="https://www.safetynet.social/assets/img/og-card.jpg" />
+  <meta property="og:image:width"  content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt"    content="Donate to SafetyNet Foundation" />
+
+  <meta name="twitter:card"        content="summary_large_image" />
+  <meta name="twitter:site"        content="@SafetyNetDeSo" />
+  <meta name="twitter:title"       content="Donate to SafetyNet Foundation" />
+  <meta name="twitter:description" content="Support community-owned DeSo infrastructure with a SEPA bank transfer." />
+  <meta name="twitter:image"       content="https://www.safetynet.social/assets/img/og-card.jpg" />
+
+  <link rel="icon" href="favicon.ico" />
+  <link rel="stylesheet" href="assets/styles.css" />
+</head>
+<body>
+
+<header class="header">
+  <div class="container navbar">
+    <a class="brand" href="index.html">
+      <img src="https://validator.safetynet.social/api/v0/get-single-profile-picture/BC1YLh99esxXJi1DnVKd7GUMnm9GXCzeLTLq4zu6g5JEvWgDLQpoS9v?fallback=https://safetynet.social/assets/img/default-profile-pic.png" alt="SafetyNet logo" width="40" height="40">
+      <span class="title">SafetyNet</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="safetynet.html">SafetyNet</a>
+      <a href="team.html">Team</a>
+      <a href="faq.html">FAQ</a>
+      <a href="donate.html" class="active" aria-current="page">Donate</a>
+      <a href="about.html">About</a>
+    </nav>
+  </div>
+</header>
+
+<main class="main">
+  <div class="container">
+    <article class="card">
+      <h1 class="mt-0">Donate</h1>
+      <p class="muted mb-4">Support SafetyNet Foundation with a bank transfer. Scan the QR code with your banking app (SEPA), or copy the IBAN/BIC below.</p>
+
+      <div class="grid grid-2 gap-4" style="align-items:center">
+        <div>
+          <div class="donate-box" role="group" aria-label="Donation bank details">
+            <p class="muted">Beneficiary</p><p><strong>SafetyNet Foundation</strong></p>
+            <p class="muted">IBAN</p><p><strong id="ibanDisplay">BE96 9055 9543 4305</strong></p>
+            <p class="muted">BIC (SWIFT)</p><p><strong id="bicDisplay">TRWIBEB1XXX</strong></p>
+            <p class="muted">Reference</p><p><strong>Donation to SafetyNet</strong></p>
+          </div>
+
+          <p class="muted mt-2 mb-4">BIC is only required for international (non-SEPA) bank transfers. The QR code pre-fills the transfer details; you can choose the amount.</p>
+
+          <div class="btn-row">
+            <button class="btn btn-primary" type="button" id="copyIbanBtn">Copy IBAN</button>
+            <button class="btn btn-ghost" type="button" id="copyBicBtn">Copy BIC</button>
+          </div>
+
+          <p id="copyStatus" class="muted mt-2" role="status" aria-live="polite"></p>
+
+          <div class="mt-6">
+            <h2 class="mt-0 mb-2" style="font-size:1.1rem">Optional message</h2>
+            <p class="muted mb-0">If your bank supports it, you may include a short note in the transfer description. Please keep the reference <strong>Donation to SafetyNet</strong> intact for our bookkeeping.</p>
+          </div>
+        </div>
+
+        <div style="text-align:center">
+          <div style="display:inline-block;background:#fff;border-radius:16px;padding:12px;border:1px solid #e5e7eb">
+            <img
+              src="assets/ecr-qr-donate-5eur-safetynet.png"
+              alt="5 EURO SEPA donation QR code for SafetyNet Foundation"
+              width="280"
+              height="280"
+              loading="lazy"
+            >
+          </div>
+          <p class="muted mt-2 mb-0">Scan to donate 5 EUR (you can change amount) via SEPA transfer.</p>
+        </div>
+      </div>
+
+      <p class="mt-4"><a href="index.html">← Back to home</a></p>
+    </article>
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="muted">© 2025 SafetyNet Foundation — <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const ibanRaw = "BE96905595434305";
+  const bicRaw  = "TRWIBEB1XXX";
+  const btnIban = document.getElementById("copyIbanBtn");
+  const btnBic  = document.getElementById("copyBicBtn");
+  const status  = document.getElementById("copyStatus");
+
+  function setStatus(msg) { status.textContent = msg; }
+
+  async function copyText(label, value) {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(value);
+        setStatus(label + " copied to clipboard.");
+        return;
+      }
+      const tmp = document.createElement("input");
+      tmp.value = value;
+      tmp.setAttribute("readonly", "");
+      tmp.style.cssText = "position:absolute;left:-9999px";
+      document.body.appendChild(tmp);
+      tmp.select();
+      tmp.setSelectionRange(0, tmp.value.length);
+      const ok = document.execCommand("copy");
+      document.body.removeChild(tmp);
+      setStatus(ok ? label + " copied to clipboard." : "Copy not supported here. Please copy: " + value);
+    } catch {
+      setStatus("Copy not supported here. Please copy: " + value);
+    }
+  }
+
+  btnIban.addEventListener("click", () => copyText("IBAN", ibanRaw));
+  btnBic.addEventListener("click",  () => copyText("BIC",  bicRaw));
+})();
+</script>
+
+</body>
+</html>
