@@ -1,0 +1,362 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SafetyNet — Expert Talk</title>
+  <meta name="description" content="SafetyNet Expert Talk — a weekly Microsoft Teams video meeting where SafetyNet presents experts on DeSo, blockchain, and decentralized social topics. Every Sunday at 19:00 UTC." />
+  <link rel="canonical" href="https://www.safetynet.social/experttalk.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="SafetyNet" />
+  <meta property="og:url" content="https://www.safetynet.social/experttalk.html" />
+  <meta property="og:title" content="SafetyNet Expert Talk" />
+  <meta property="og:description" content="Weekly Microsoft Teams sessions where SafetyNet presents experts on DeSo, blockchain, and decentralized social. Every Sunday at 19:00 UTC." />
+  <meta property="og:image" content="https://www.safetynet.social/assets/img/og-card.jpg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content="SafetyNet Expert Talk" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@SafetyNetDeSo" />
+  <meta name="twitter:title" content="SafetyNet Expert Talk" />
+  <meta name="twitter:description" content="Weekly Microsoft Teams sessions on DeSo and decentralized social. Every Sunday at 19:00 UTC." />
+  <meta name="twitter:image" content="https://www.safetynet.social/assets/img/og-card.jpg" />
+  <link rel="icon" href="favicon.ico" />
+  <link rel="stylesheet" href="assets/styles.css" />
+  <style>
+    .btn-teams{display:inline-flex;align-items:center;gap:.6rem;background:#6264a7;color:#fff;padding:.65rem 1.1rem;border-radius:12px;font-weight:700;text-decoration:none}
+    .btn-teams:hover{background:#7b7dc2;text-decoration:none}
+    .btn-teams svg{width:20px;height:20px;flex-shrink:0}
+    .meeting-badge{display:inline-flex;align-items:center;gap:.5rem;background:var(--brand);color:var(--ink);font-weight:700;font-size:.85rem;padding:.35rem .85rem;border-radius:999px}
+    .countdown{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
+    .cd-unit{display:flex;flex-direction:column;align-items:center;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.75rem 1.1rem;min-width:68px}
+    .cd-num{font-size:2rem;font-weight:700;color:var(--brand);line-height:1}
+    .cd-lbl{font-size:.7rem;color:var(--muted);margin-top:.25rem;text-transform:uppercase;letter-spacing:.6px}
+    .clocks-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+    .clock-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:1rem;text-align:center}
+    .clock-card .flag{font-size:1.75rem;line-height:1}
+    .clock-card .city{font-size:.78rem;color:var(--muted);margin:.3rem 0 .45rem}
+    .clock-card .mtime{font-size:1.45rem;font-weight:700;color:var(--brand)}
+    .clock-card .tz{font-size:.75rem;color:var(--muted);margin-top:.15rem}
+    .clock-card .clnow{font-size:.8rem;color:var(--muted);margin-top:.5rem;border-top:1px solid var(--border);padding-top:.5rem}
+    .clock-card .clnow span{color:var(--txt);font-weight:600}
+    .session-list{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
+    .session-item{display:grid;grid-template-columns:110px 1fr auto;gap:.75rem 1rem;align-items:start;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.85rem 1rem}
+    .session-item.past{opacity:.55}
+    .session-date{font-size:.82rem;color:var(--muted);padding-top:.1rem}
+    .session-date strong{display:block;font-size:1rem;color:var(--brand)}
+    .session-title{font-weight:700;margin-bottom:.2rem}
+    .session-speaker{font-size:.85rem;color:var(--muted)}
+    .session-desc{font-size:.85rem;color:var(--muted);margin-top:.25rem}
+    .tag-up{font-size:.72rem;font-weight:700;background:var(--brand);color:var(--ink);padding:.2rem .55rem;border-radius:999px;white-space:nowrap}
+    .tag-past{font-size:.72rem;font-weight:700;background:var(--card);border:1px solid var(--border);color:var(--muted);padding:.2rem .55rem;border-radius:999px;white-space:nowrap}
+    .empty-state{color:var(--muted);font-style:italic;margin-top:.5rem}
+    .admin-toggle{background:none;border:1px solid var(--border);color:var(--muted);padding:.35rem .75rem;border-radius:8px;cursor:pointer;font-size:.82rem}
+    .admin-toggle:hover{border-color:var(--brand);color:var(--brand)}
+    .admin-panel{display:none;margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1.25rem}
+    .admin-panel.open{display:block}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+    .form-grid .full{grid-column:1/-1}
+    .field{display:flex;flex-direction:column;gap:.3rem}
+    .field label{font-size:.8rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px}
+    .field input,.field textarea{background:var(--card);border:1px solid var(--border);color:var(--txt);border-radius:8px;padding:.55rem .75rem;font-size:.95rem;font-family:inherit}
+    .field input:focus,.field textarea:focus{outline:none;border-color:var(--brand)}
+    .field textarea{resize:vertical;min-height:64px}
+    .admin-msg{font-size:.85rem;margin-top:.5rem;min-height:1.2em}
+    .admin-msg.ok{color:var(--brand)}
+    .admin-msg.err{color:#f87171}
+    .del-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:.2rem .4rem;border-radius:6px;line-height:1}
+    .del-btn:hover{color:#f87171;background:rgba(248,113,113,.1)}
+    @media(max-width:900px){.clocks-grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:640px){.clocks-grid{grid-template-columns:1fr 1fr}.session-item{grid-template-columns:90px 1fr auto}.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:1}}
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container navbar">
+    <a class="brand" href="index.html">
+      <img src="https://validator.safetynet.social/api/v0/get-single-profile-picture/BC1YLh99esxXJi1DnVKd7GUMnm9GXCzeLTLq4zu6g5JEvWgDLQpoS9v?fallback=https://safetynet.social/assets/img/default-profile-pic.png" alt="SafetyNet logo" width="40" height="40">
+      <span class="title">SafetyNet</span>
+    </a>
+    <nav class="nav" aria-label="Main">
+      <a href="index.html">Home</a>
+      <a href="safetynet.html">SafetyNet</a>
+      <a href="team.html">Team</a>
+      <a href="experttalk.html" class="active" aria-current="page">Expert Talk</a>
+      <a href="faq.html">FAQ</a>
+      <a href="donate.html">Donate</a>
+      <a href="about.html">About</a>
+    </nav>
+  </div>
+</header>
+
+<main class="main">
+  <div class="container">
+
+    <!-- Hero -->
+    <section class="card mb-4">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1.5rem">
+        <div style="flex:1;min-width:260px">
+          <span class="meeting-badge">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M16 8l4-3v10l-4-3"/></svg>
+            Weekly · Every Sunday · 19:00 UTC
+          </span>
+          <h1 class="mt-2 mb-2" style="font-size:2rem">SafetyNet Expert Talk</h1>
+          <p class="muted" style="max-width:540px;margin:0 0 1.25rem">
+            A weekly Microsoft Teams video session where SafetyNet invites experts to share knowledge on DeSo,
+            blockchain infrastructure, decentralized social, and the broader Web3 ecosystem.
+            Open to the whole community — all are welcome.
+          </p>
+          <a class="btn-teams" href="https://teams.microsoft.com/meet/391289474755?p=tyG9sZwebuwrxeIA76" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.625 7.875a2.625 2.625 0 1 0-5.25 0 2.625 2.625 0 0 0 5.25 0zM14.25 9.75a2.25 2.25 0 1 0-4.5 0 2.25 2.25 0 0 0 4.5 0zM22.5 11.25h-3.937a3.74 3.74 0 0 1 .937 2.5v4.5H24v-4.5a2.5 2.5 0 0 0-1.5-2.5zM15.75 13.75a2.5 2.5 0 0 0-2.5-2.5h-2.5a2.5 2.5 0 0 0-2.5 2.5V19h7.5v-5.25zM7.437 11.25H3.5A2.5 2.5 0 0 0 1 13.75V18h3.5v-4.25a3.74 3.74 0 0 1 .937-2.5z"/></svg>
+            Join on Microsoft Teams
+          </a>
+        </div>
+        <div>
+          <p class="muted mb-2" style="font-size:.82rem;text-transform:uppercase;letter-spacing:.5px">Next session in</p>
+          <div class="countdown">
+            <div class="cd-unit"><span class="cd-num" id="cd-d">--</span><span class="cd-lbl">Days</span></div>
+            <div class="cd-unit"><span class="cd-num" id="cd-h">--</span><span class="cd-lbl">Hours</span></div>
+            <div class="cd-unit"><span class="cd-num" id="cd-m">--</span><span class="cd-lbl">Min</span></div>
+            <div class="cd-unit"><span class="cd-num" id="cd-s">--</span><span class="cd-lbl">Sec</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Schedule -->
+    <section class="card mb-4">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
+        <h2 class="mt-0 mb-0">Session Schedule</h2>
+        <button class="admin-toggle" id="adminToggle">⚙ Manage sessions</button>
+      </div>
+      <div id="sessionList" class="session-list">
+        <p class="empty-state" id="sessionsEmpty">Loading sessions…</p>
+      </div>
+
+      <!-- Admin panel -->
+      <div class="admin-panel" id="adminPanel">
+        <div id="adminGate">
+          <p class="muted" style="font-size:.85rem;margin:0 0 .75rem">Enter the admin code to manage sessions:</p>
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+            <input type="password" id="adminPwd" placeholder="Admin password"
+              style="background:var(--card);border:1px solid var(--border);color:var(--txt);border-radius:8px;padding:.5rem .75rem;font-size:.95rem;flex:1;min-width:160px">
+            <button class="btn btn-primary" id="adminLogin" type="button">Unlock</button>
+          </div>
+          <p class="admin-msg err" id="loginErr"></p>
+        </div>
+        <div id="adminForm" style="display:none">
+          <h3 class="mt-0 mb-4" style="font-size:1rem">Add new session</h3>
+          <div class="form-grid">
+            <div class="field">
+              <label for="f-date">Date (Sunday)</label>
+              <input type="date" id="f-date">
+            </div>
+            <div class="field">
+              <label for="f-speaker">Speaker</label>
+              <input type="text" id="f-speaker" placeholder="e.g. @username or Full Name">
+            </div>
+            <div class="field full">
+              <label for="f-title">Talk title</label>
+              <input type="text" id="f-title" placeholder="e.g. Building on DeSo: an intro">
+            </div>
+            <div class="field full">
+              <label for="f-desc">Short description (optional)</label>
+              <textarea id="f-desc" placeholder="A brief summary of what the talk covers…"></textarea>
+            </div>
+          </div>
+          <div class="btn-row mt-4">
+            <button class="btn btn-primary" id="addSession" type="button">Add session</button>
+            <button class="btn btn-ghost" id="adminLogout" type="button">Lock</button>
+          </div>
+          <p class="admin-msg" id="addMsg"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- World clocks -->
+    <section class="card">
+      <h2 class="mt-0 mb-4">Meeting time around the world</h2>
+      <div class="clocks-grid" id="clocksGrid"></div>
+      <p class="muted mt-4" style="font-size:.82rem">Times shown for the next upcoming Sunday. Live clocks update every 30 seconds.</p>
+    </section>
+
+  </div>
+</main>
+
+<footer class="footer">
+  <div class="container">
+    <div class="muted">© 2025 SafetyNet Foundation — <a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a></div>
+  </div>
+</footer>
+
+<script>
+(() => {
+  const MEETING_HOUR_UTC = 19;
+  const MEETING_DAY      = 0; // Sunday
+  const API              = '/api/sessions';
+
+  const zones = [
+    { flag:'🇺🇸', city:'New York',    tz:'America/New_York',    label:'ET'        },
+    { flag:'🇺🇸', city:'Los Angeles', tz:'America/Los_Angeles', label:'PT'        },
+    { flag:'🇬🇧', city:'London',      tz:'Europe/London',       label:'GMT/BST'   },
+    { flag:'🇳🇱', city:'Amsterdam',   tz:'Europe/Amsterdam',    label:'CET/CEST'  },
+    { flag:'🇮🇳', city:'Mumbai',      tz:'Asia/Kolkata',        label:'IST'       },
+    { flag:'🇸🇬', city:'Singapore',   tz:'Asia/Singapore',      label:'SGT'       },
+    { flag:'🇯🇵', city:'Tokyo',       tz:'Asia/Tokyo',          label:'JST'       },
+    { flag:'🇦🇺', city:'Sydney',      tz:'Australia/Sydney',    label:'AEST/AEDT' },
+  ];
+
+  function nextMeetingUTC() {
+    const now  = new Date();
+    const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), MEETING_HOUR_UTC, 0, 0, 0));
+    let diff   = (MEETING_DAY - next.getUTCDay() + 7) % 7;
+    if (diff === 0 && now >= next) diff = 7;
+    next.setUTCDate(next.getUTCDate() + diff);
+    return next;
+  }
+
+  function fmt(date, tz, opts) {
+    return new Intl.DateTimeFormat('en-GB', { timeZone: tz, ...opts }).format(date);
+  }
+
+  function esc(s) {
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // World clocks
+  const meeting = nextMeetingUTC();
+  const grid    = document.getElementById('clocksGrid');
+  zones.forEach(z => {
+    const mt  = fmt(meeting, z.tz, { hour:'2-digit', minute:'2-digit', hour12:false });
+    const day = fmt(meeting, z.tz, { weekday:'short' });
+    const id  = 'now-' + z.tz.replace(/\//g,'-');
+    const el  = document.createElement('div');
+    el.className = 'clock-card';
+    el.innerHTML = `<div class="flag">${z.flag}</div><div class="city">${z.city}</div><div class="mtime">${mt}</div><div class="tz">${day} · ${z.label}</div><div class="clnow">Now: <span id="${id}">--:--</span></div>`;
+    grid.appendChild(el);
+  });
+  function updateNow() {
+    const now = new Date();
+    zones.forEach(z => {
+      const el = document.getElementById('now-' + z.tz.replace(/\//g,'-'));
+      if (el) el.textContent = fmt(now, z.tz, { hour:'2-digit', minute:'2-digit', hour12:false });
+    });
+  }
+  updateNow(); setInterval(updateNow, 30000);
+
+  // Countdown
+  function tick() {
+    const diff = nextMeetingUTC() - new Date();
+    document.getElementById('cd-d').textContent = String(Math.floor(diff/86400000)).padStart(2,'0');
+    document.getElementById('cd-h').textContent = String(Math.floor((diff%86400000)/3600000)).padStart(2,'0');
+    document.getElementById('cd-m').textContent = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+    document.getElementById('cd-s').textContent = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 1000);
+
+  // Sessions
+  let sessions = [];
+  let pwd      = sessionStorage.getItem('sn_admin') || '';
+
+  async function loadSessions() {
+    try { const r = await fetch(API); sessions = await r.json(); }
+    catch { sessions = []; }
+    renderSessions();
+  }
+
+  function renderSessions() {
+    const list  = document.getElementById('sessionList');
+    const empty = document.getElementById('sessionsEmpty');
+    list.querySelectorAll('.session-item').forEach(el => el.remove());
+    if (!sessions.length) {
+      empty.style.display = 'block';
+      empty.textContent   = 'No sessions scheduled yet — check back soon.';
+      return;
+    }
+    empty.style.display = 'none';
+    const now = new Date();
+    sessions.forEach(s => {
+      const sd   = new Date(s.date + 'T19:00:00Z');
+      const past = sd < now;
+      const item = document.createElement('div');
+      item.className = 'session-item' + (past ? ' past' : '');
+      item.innerHTML = `
+        <div class="session-date">
+          <strong>${sd.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</strong>
+          ${sd.toLocaleDateString('en-GB',{year:'numeric'})}
+        </div>
+        <div>
+          <div class="session-title">${esc(s.title)}</div>
+          <div class="session-speaker">🎤 ${esc(s.speaker)}</div>
+          ${s.description?`<div class="session-desc">${esc(s.description)}</div>`:''}
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem">
+          <span class="${past?'tag-past':'tag-up'}">${past?'Past':'Upcoming'}</span>
+          ${pwd?`<button class="del-btn" data-id="${s.id}" title="Delete">🗑</button>`:''}
+        </div>`;
+      list.appendChild(item);
+    });
+    list.querySelectorAll('.del-btn').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Delete this session?')) return;
+        const r = await fetch(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id:Number(btn.dataset.id), password:pwd }) });
+        if (r.ok) loadSessions(); else alert('Delete failed.');
+      });
+    });
+  }
+
+  // Admin
+  const panel  = document.getElementById('adminPanel');
+  const gate   = document.getElementById('adminGate');
+  const form   = document.getElementById('adminForm');
+
+  document.getElementById('adminToggle').addEventListener('click', () => {
+    panel.classList.toggle('open');
+    if (pwd) showForm();
+  });
+
+  document.getElementById('adminLogin').addEventListener('click', async () => {
+    const p = document.getElementById('adminPwd').value.trim();
+    if (!p) return;
+    const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ password:p, _check:true }) });
+    if (r.status === 400) { pwd = p; sessionStorage.setItem('sn_admin', p); showForm(); renderSessions(); }
+    else if (r.status === 401) { document.getElementById('loginErr').textContent = 'Incorrect password.'; }
+    else { document.getElementById('loginErr').textContent = 'Could not connect to server.'; }
+  });
+
+  document.getElementById('adminPwd').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('adminLogin').click(); });
+
+  document.getElementById('adminLogout').addEventListener('click', () => {
+    pwd = ''; sessionStorage.removeItem('sn_admin');
+    panel.classList.remove('open'); gate.style.display='block'; form.style.display='none';
+    renderSessions();
+  });
+
+  function showForm() {
+    gate.style.display = 'none'; form.style.display = 'block';
+    document.getElementById('f-date').value = nextMeetingUTC().toISOString().split('T')[0];
+  }
+
+  document.getElementById('addSession').addEventListener('click', async () => {
+    const date    = document.getElementById('f-date').value;
+    const title   = document.getElementById('f-title').value.trim();
+    const speaker = document.getElementById('f-speaker').value.trim();
+    const desc    = document.getElementById('f-desc').value.trim();
+    const msg     = document.getElementById('addMsg');
+    if (!date||!title||!speaker) { msg.className='admin-msg err'; msg.textContent='Date, title and speaker are required.'; return; }
+    const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ date, title, speaker, description:desc, password:pwd }) });
+    if (r.ok) {
+      msg.className='admin-msg ok'; msg.textContent='✓ Session added.';
+      document.getElementById('f-title').value=''; document.getElementById('f-speaker').value=''; document.getElementById('f-desc').value='';
+      await loadSessions(); setTimeout(()=>{ msg.textContent=''; }, 3000);
+    } else { msg.className='admin-msg err'; msg.textContent='Failed to add session.'; }
+  });
+
+  if (pwd) showForm();
+  loadSessions();
+})();
+</script>
+
+</body>
+</html>
