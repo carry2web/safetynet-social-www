@@ -176,7 +176,7 @@
 
     <!-- World clocks -->
     <section class="card">
-      <h2 class="mt-0 mb-4">Meeting time around the world</h2>
+      <h2 class="mt-0 mb-4">Meeting time around the world <span style="font-size:.85rem;font-weight:400;color:var(--muted)">(24-hour clock)</span></h2>
       <div class="clocks-grid" id="clocksGrid"></div>
       <p class="muted mt-4" style="font-size:.82rem">Times shown for the next upcoming Sunday. Live clocks update every 30 seconds.</p>
     </section>
@@ -233,7 +233,7 @@
     const id  = 'now-' + z.tz.replace(/\//g,'-');
     const el  = document.createElement('div');
     el.className = 'clock-card';
-    el.innerHTML = `<div class="flag">${z.flag}</div><div class="city">${z.city}</div><div class="mtime">${mt}</div><div class="tz">${day} · ${z.label}</div><div class="clnow">Now: <span id="${id}">--:--</span></div>`;
+    el.innerHTML = `<div class="flag">${z.flag}</div><div class="city">${z.city}</div><div class="mtime">${mt} <span style="font-size:.7rem;font-weight:400;color:var(--muted)">24h</span></div><div class="tz">${day} · ${z.label}</div><div class="clnow">Now: <span id="${id}">--:--</span></div>`;
     grid.appendChild(el);
   });
   function updateNow() {
