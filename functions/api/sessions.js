@@ -1,96 +1,79 @@
 /**
  * Cloudflare Pages Function — /api/sessions
  *
- * Bindings required (set in CF Pages → Settings → Functions):
- *   KV namespace : SESSIONS_KV  → a KV namespace you create named e.g. "safetynet-sessions"
- *   Env variable : ADMIN_PASSWORD → your chosen admin password (plain text, stored as CF secret)
+ * Bindings (CF Pages → Settings → Functions):
+ *   KV namespace : SESSIONS_KV  → "safetynet-sessions"
+ *   Secret       : ADMIN_PASSWORD
  *
- * Endpoints:
- *   GET    /api/sessions           — returns all sessions (public)
- *   POST   /api/sessions           — adds a session (password required)
- *   DELETE /api/sessions           — deletes a session by id (password required)
+ * GET    /api/sessions  — list all (public)
+ * POST   /api/sessions  — add session
+ * PUT    /api/sessions  — edit session by id
+ * DELETE /api/sessions  — delete session by id
  */
 
 const CORS = {
   'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Methods': 'GET, POST, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type',
 };
 
-function json(data, status = 200) {
-  return new Response(JSON.stringify(data), {
+const res = (data, status = 200) =>
+  new Response(JSON.stringify(data), {
     status,
     headers: { 'Content-Type': 'application/json', ...CORS },
   });
+
+async function load(env) {
+  const raw = await env.SESSIONS_KV.get('sessions');
+  return raw ? JSON.parse(raw) : [];
 }
 
-export async function onRequest(context) {
-  const { request, env } = context;
+async function save(env, sessions) {
+  sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+  await env.SESSIONS_KV.put('sessions', JSON.stringify(sessions));
+}
 
-  // Preflight
-  if (request.method === 'OPTIONS') {
-    return new Response(null, { status: 204, headers: CORS });
-  }
+export async function onRequest({ request, env }) {
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: CORS });
 
-  // ── GET — public list ────────────────────────────────────────────────────
-  if (request.method === 'GET') {
-    const raw = await env.SESSIONS_KV.get('sessions');
-    const sessions = raw ? JSON.parse(raw) : [];
-    return json(sessions);
-  }
+  // Public read
+  if (request.method === 'GET') return res(await load(env));
 
-  // ── POST — add session ───────────────────────────────────────────────────
+  // All writes need a body + password
+  let body;
+  try { body = await request.json(); } catch { return res({ error: 'Invalid JSON' }, 400); }
+  if (!body.password || body.password !== env.ADMIN_PASSWORD) return res({ error: 'Unauthorized' }, 401);
+
+  // POST — add
   if (request.method === 'POST') {
-    let body;
-    try { body = await request.json(); }
-    catch { return json({ error: 'Invalid JSON' }, 400); }
-
-    if (!body.password || body.password !== env.ADMIN_PASSWORD) {
-      return json({ error: 'Unauthorized' }, 401);
-    }
-
-    const { date, title, speaker, description } = body;
-    if (!date || !title || !speaker) {
-      return json({ error: 'date, title and speaker are required' }, 400);
-    }
-
-    const raw      = await env.SESSIONS_KV.get('sessions');
-    const sessions = raw ? JSON.parse(raw) : [];
-
-    sessions.push({
-      id:          Date.now(),
-      date,          // ISO date string  e.g. "2025-09-07"
-      title,
-      speaker,
-      description:   description || '',
-    });
-
-    // Keep sorted by date ascending
-    sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
-
-    await env.SESSIONS_KV.put('sessions', JSON.stringify(sessions));
-    return json({ ok: true });
+    if (body._check) return res({ error: 'date, title and speaker are required' }, 400);
+    const { date, title, speaker, description = '', recording = '' } = body;
+    if (!date || !title || !speaker) return res({ error: 'date, title and speaker are required' }, 400);
+    const sessions = await load(env);
+    sessions.push({ id: Date.now(), date, title, speaker, description, recording });
+    await save(env, sessions);
+    return res({ ok: true });
   }
 
-  // ── DELETE — remove session ──────────────────────────────────────────────
+  // PUT — edit
+  if (request.method === 'PUT') {
+    const { id, date, title, speaker, description = '', recording = '' } = body;
+    if (!id || !date || !title || !speaker) return res({ error: 'id, date, title and speaker are required' }, 400);
+    const sessions = await load(env);
+    const i = sessions.findIndex(s => s.id === id);
+    if (i === -1) return res({ error: 'Not found' }, 404);
+    sessions[i] = { id, date, title, speaker, description, recording };
+    await save(env, sessions);
+    return res({ ok: true });
+  }
+
+  // DELETE
   if (request.method === 'DELETE') {
-    let body;
-    try { body = await request.json(); }
-    catch { return json({ error: 'Invalid JSON' }, 400); }
-
-    if (!body.password || body.password !== env.ADMIN_PASSWORD) {
-      return json({ error: 'Unauthorized' }, 401);
-    }
-
-    if (!body.id) return json({ error: 'id is required' }, 400);
-
-    const raw      = await env.SESSIONS_KV.get('sessions');
-    const sessions = raw ? JSON.parse(raw) : [];
-    const filtered = sessions.filter(s => s.id !== body.id);
-
-    await env.SESSIONS_KV.put('sessions', JSON.stringify(filtered));
-    return json({ ok: true });
+    if (!body.id) return res({ error: 'id is required' }, 400);
+    const sessions = await load(env);
+    await save(env, sessions.filter(s => s.id !== body.id));
+    return res({ ok: true });
   }
 
-  return json({ error: 'Method not allowed' }, 405);
+  return res({ error: 'Method not allowed' }, 405);
 }
