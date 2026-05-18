@@ -101,6 +101,18 @@
 
     .empty-state{color:var(--muted);font-style:italic;margin-top:.5rem}
 
+    /* Search bar */
+    .search-wrap{position:relative;max-width:360px}
+    .search-wrap svg{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);pointer-events:none}
+    .search-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--txt);border-radius:8px;padding:.5rem .75rem .5rem 2.1rem;font-size:.9rem;font-family:inherit}
+    .search-input:focus{outline:none;border-color:var(--brand)}
+    .search-input::placeholder{color:var(--muted)}
+
+    /* Show more */
+    .show-more-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:.4rem 1rem;border-radius:8px;cursor:pointer;font-size:.83rem;margin-top:.75rem;width:100%}
+    .show-more-btn:hover{border-color:var(--brand);color:var(--brand)}
+    .search-count{font-size:.78rem;color:var(--muted);margin-top:.5rem}
+
     @media(max-width:900px){.clocks-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:640px){
       .clocks-grid{grid-template-columns:1fr 1fr}
@@ -180,6 +192,13 @@
 
       <!-- Past talks -->
       <div class="section-label" style="margin-top:2rem">Past talks</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:.75rem">
+        <div class="search-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/></svg>
+          <input class="search-input" type="search" id="pastSearch" placeholder="Search title or description…" aria-label="Search past talks">
+        </div>
+        <span class="search-count" id="searchCount"></span>
+      </div>
       <div style="overflow-x:auto">
         <table class="past-table" id="pastTable">
           <thead>
@@ -197,6 +216,7 @@
           </tbody>
         </table>
       </div>
+      <button class="show-more-btn" id="showMoreBtn" style="display:none">Show more ▾</button>
 
       <!-- Admin panel -->
       <div class="admin-panel" id="adminPanel">
@@ -338,6 +358,9 @@
   let sessions  = [];
   let pwd       = sessionStorage.getItem('sn_admin') || '';
   let editingId = null;
+  let showAll   = false;
+  let searchQuery = '';
+  const INITIAL_SHOW = 3;
 
   // ── Load & render ─────────────────────────────────────────────────────────
   async function loadSessions() {
@@ -390,16 +413,48 @@
   }
 
   function renderPast(list) {
-    const tbody  = document.getElementById('pastBody');
-    const empty  = document.getElementById('pastEmpty');
-    const actHdr = document.getElementById('actionsHeader');
+    const tbody    = document.getElementById('pastBody');
+    const empty    = document.getElementById('pastEmpty');
+    const actHdr   = document.getElementById('actionsHeader');
+    const showMore = document.getElementById('showMoreBtn');
+    const countEl  = document.getElementById('searchCount');
     tbody.querySelectorAll('tr:not(#pastEmpty)').forEach(el => el.remove());
 
-    if (!list.length) { empty.style.display = ''; return; }
+    // Filter by search query
+    const q        = searchQuery.toLowerCase();
+    const filtered = q
+      ? list.filter(s =>
+          s.title.toLowerCase().includes(q) ||
+          (s.description || '').toLowerCase().includes(q))
+      : list;
+
+    // Determine rows to show
+    const isSearching = !!q;
+    const toShow = (isSearching || showAll) ? filtered : filtered.slice(0, INITIAL_SHOW);
+    const hidden = filtered.length - toShow.length;
+
+    // Count label
+    if (isSearching) {
+      countEl.textContent = filtered.length
+        ? `${filtered.length} result${filtered.length === 1 ? '' : 's'}`
+        : 'No matches';
+    } else {
+      countEl.textContent = '';
+    }
+
+    // Show-more button
+    showMore.style.display = (!isSearching && hidden > 0) ? 'block' : 'none';
+    showMore.textContent   = showAll ? 'Show less ▴' : `Show ${hidden} more ▾`;
+
+    if (!filtered.length) {
+      empty.style.display = '';
+      empty.querySelector('td').textContent = isSearching ? 'No sessions match your search.' : 'No past talks yet.';
+      return;
+    }
     empty.style.display = 'none';
     if (pwd) actHdr.style.display = '';
 
-    list.forEach(s => {
+    toShow.forEach(s => {
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td class="td-date">${shortDate(s.date)}</td>
@@ -433,6 +488,17 @@
       });
     });
   }
+
+  document.getElementById('pastSearch').addEventListener('input', e => {
+    searchQuery = e.target.value.trim();
+    showAll     = false;
+    renderSessions();
+  });
+
+  document.getElementById('showMoreBtn').addEventListener('click', () => {
+    showAll = !showAll;
+    renderSessions();
+  });
 
   // ── Edit mode ─────────────────────────────────────────────────────────────
   function startEdit(id) {
