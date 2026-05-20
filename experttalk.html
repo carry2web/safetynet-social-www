@@ -386,6 +386,7 @@
     const mt  = fmt(meeting, z.tz, { hour:'2-digit', minute:'2-digit', hour12:false });
     const day = fmt(meeting, z.tz, { weekday:'short' });
     const clockId = 'analog-' + z.tz.replace(/\//g,'-');
+    const digitalId = 'digital-' + z.tz.replace(/\//g,'-');
     const el  = document.createElement('div');
     el.className = 'clock-card';
     el.innerHTML = `
@@ -394,18 +395,25 @@
       <div class="analog-clock-wrap" style="display:flex;justify-content:center;margin:0.5rem 0 0.7rem">
         <div id="${clockId}" style="width:60px;height:60px;"></div>
       </div>
+      <div id="${digitalId}" class="digital-clock" style="font-size:1.1rem;font-weight:600;margin-bottom:.2rem"></div>
       <div class="tz">${day} · ${z.label}</div>
     `;
     grid.appendChild(el);
   });
   // Initial render
+  function pad(n) { return n.toString().padStart(2, '0'); }
   function updateAllClocks() {
     zones.forEach(z => {
       const clockId = 'analog-' + z.tz.replace(/\//g,'-');
+      const digitalId = 'digital-' + z.tz.replace(/\//g,'-');
       const el = document.getElementById(clockId);
+      const digitalEl = document.getElementById(digitalId);
       if (el) {
         const t = getTimeParts(z.tz);
         el.innerHTML = renderAnalogClockSVG(t, 60);
+        if (digitalEl) {
+          digitalEl.textContent = `${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`;
+        }
       }
     });
   }
@@ -654,10 +662,10 @@
     const p = document.getElementById('adminPwd').value.trim();
     if (!p) return;
     const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ password:p, _check:true }) });
-    if (r.status === 400) {
+    if (r.status === 200) {
       pwd = p; sessionStorage.setItem('sn_admin', p);
       showForm(); renderSessions();
-    } else if (r.status === 401) {
+    } else if (r.status === 401 || r.status === 400) {
       document.getElementById('loginErr').textContent = 'Incorrect password.';
     } else {
       document.getElementById('loginErr').textContent = 'Could not connect to server.';
