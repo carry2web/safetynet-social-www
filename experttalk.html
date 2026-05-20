@@ -353,9 +353,10 @@
     // Hand endpoints (rounded to 2 decimals)
     function hand(angle, len) {
       const rad = (angle - 90) * Math.PI / 180;
-      const x = +(cx + len * Math.cos(rad)).toFixed(2);
-      const y = +(cy + len * Math.sin(rad)).toFixed(2);
-      return `${x},${y}`;
+      return {
+        x: +(cx + len * Math.cos(rad)).toFixed(2),
+        y: +(cy + len * Math.sin(rad)).toFixed(2)
+      };
     }
     // Hour marks
     let marks = '';
@@ -367,13 +368,16 @@
       const y2 = +(cy + r * Math.sin(a)).toFixed(2);
       marks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#888" stroke-width="2" />`;
     }
+    const hourHand = hand(hour, lh);
+    const minHand = hand(min, lm);
+    const secHand = hand(sec, ls);
     return `
       <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
         <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#bbb" stroke-width="2" />
         ${marks}
-        <line x1="${cx}" y1="${cy}" x2="${hand(hour, lh)}" stroke="#222" stroke-width="3" stroke-linecap="round" />
-        <line x1="${cx}" y1="${cy}" x2="${hand(min, lm)}" stroke="#444" stroke-width="2" stroke-linecap="round" />
-        <line x1="${cx}" y1="${cy}" x2="${hand(sec, ls)}" stroke="#e44" stroke-width="1" stroke-linecap="round" />
+        <line x1="${cx}" y1="${cy}" x2="${hourHand.x}" y2="${hourHand.y}" stroke="#222" stroke-width="3" stroke-linecap="round" />
+        <line x1="${cx}" y1="${cy}" x2="${minHand.x}" y2="${minHand.y}" stroke="#444" stroke-width="2" stroke-linecap="round" />
+        <line x1="${cx}" y1="${cy}" x2="${secHand.x}" y2="${secHand.y}" stroke="#e44" stroke-width="1" stroke-linecap="round" />
         <circle cx="${cx}" cy="${cy}" r="2.5" fill="#222" />
       </svg>`;
   }
