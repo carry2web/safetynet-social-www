@@ -271,7 +271,7 @@
     <section class="card">
       <h2 class="mt-0 mb-4">Meeting time around the world <span style="font-size:.85rem;font-weight:400;color:var(--muted)">(24-hour clock)</span></h2>
       <div class="clocks-grid" id="clocksGrid"></div>
-      <p class="muted mt-4" style="font-size:.82rem">Times shown for the next upcoming Sunday. Live clocks update every 30 seconds.</p>
+      <p class="muted mt-4" style="font-size:.82rem">Times shown for the next upcoming Sunday. Analog clocks show current local time in each city.</p>
     </section>
 
   </div>
@@ -283,6 +283,8 @@
   </div>
 </footer>
 
+<!-- Analog clock library: https://github.com/hipstersmoothie/analog-clock-js -->
+<script src="https://cdn.jsdelivr.net/npm/analog-clock-js@1.1.0/dist/analog-clock.min.js"></script>
 <script>
 (() => {
   const MEETING_HOUR_UTC = 19;
@@ -329,20 +331,46 @@
   zones.forEach(z => {
     const mt  = fmt(meeting, z.tz, { hour:'2-digit', minute:'2-digit', hour12:false });
     const day = fmt(meeting, z.tz, { weekday:'short' });
-    const id  = 'now-' + z.tz.replace(/\//g,'-');
+    const clockId = 'analog-' + z.tz.replace(/\//g,'-');
     const el  = document.createElement('div');
     el.className = 'clock-card';
-    el.innerHTML = `<div class="flag">${z.flag}</div><div class="city">${z.city}</div><div class="mtime">${mt} <span style="font-size:.7rem;font-weight:400;color:var(--muted)">24h</span></div><div class="tz">${day} · ${z.label}</div><div class="clnow">Now: <span id="${id}">--:--</span></div>`;
+    el.innerHTML = `
+      <div class="flag">${z.flag}</div>
+      <div class="city">${z.city}</div>
+      <div class="analog-clock-wrap" style="display:flex;justify-content:center;margin:0.5rem 0 0.7rem">
+        <div id="${clockId}" style="width:60px;height:60px;"></div>
+      </div>
+      <div class="tz">${day} · ${z.label}</div>
+    `;
     grid.appendChild(el);
+    // Initialize analog clock for this timezone
+    setTimeout(() => {
+      new AnalogClock(document.getElementById(clockId), {
+        width: 60,
+        height: 60,
+        showDigital: false,
+        showMinuteMarks: true,
+        showSecondHand: true,
+        theme: 'light',
+        getTime: () => {
+          // Get current time in this timezone
+          const now = new Date();
+          // Convert to target timezone offset
+          const locale = 'en-US';
+          const tz = z.tz;
+          // Get hour, minute, second in target tz
+          const parts = new Intl.DateTimeFormat(locale, {
+            timeZone: tz,
+            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+          }).formatToParts(now);
+          const h = Number(parts.find(p => p.type === 'hour').value);
+          const m = Number(parts.find(p => p.type === 'minute').value);
+          const s = Number(parts.find(p => p.type === 'second').value);
+          return { hours: h, minutes: m, seconds: s };
+        }
+      });
+    }, 0);
   });
-  function updateNow() {
-    const now = new Date();
-    zones.forEach(z => {
-      const el = document.getElementById('now-' + z.tz.replace(/\//g,'-'));
-      if (el) el.textContent = fmt(now, z.tz, { hour:'2-digit', minute:'2-digit', hour12:false });
-    });
-  }
-  updateNow(); setInterval(updateNow, 30000);
 
   // ── Countdown ─────────────────────────────────────────────────────────────
   function tick() {
