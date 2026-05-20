@@ -46,7 +46,7 @@ export async function onRequest({ request, env }) {
 
   // POST — add
   if (request.method === 'POST') {
-    if (body._check) return res({ error: 'date, title and speaker are required' }, 400);
+    if (body._check) return res({ ok: true }, 200);
     const { date, title, speaker, description = '', recording = '' } = body;
     if (!date || !title || !speaker) return res({ error: 'date, title and speaker are required' }, 400);
     const sessions = await load(env);
