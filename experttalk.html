@@ -327,16 +327,18 @@
   const meeting = nextMeetingUTC();
   const grid    = document.getElementById('clocksGrid');
   // --- Analog clock SVG rendering ---
+
   function getTimeParts(tz) {
+    // Get the current time in the target timezone using Date and locale string parsing
     const now = new Date();
+    // Use toLocaleString to get the correct time in the target timezone
     const locale = 'en-US';
-    const parts = new Intl.DateTimeFormat(locale, {
-      timeZone: tz,
-      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-    }).formatToParts(now);
-    const h = Number(parts.find(p => p.type === 'hour').value);
-    const m = Number(parts.find(p => p.type === 'minute').value);
-    const s = Number(parts.find(p => p.type === 'second').value);
+    const options = { timeZone: tz, hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
+    const parts = new Intl.DateTimeFormat(locale, options).formatToParts(now);
+    // Defensive: fallback to 0 if not found
+    const h = Number(parts.find(p => p.type === 'hour')?.value || 0);
+    const m = Number(parts.find(p => p.type === 'minute')?.value || 0);
+    const s = Number(parts.find(p => p.type === 'second')?.value || 0);
     return { h, m, s };
   }
 
@@ -345,22 +347,24 @@
     const hour = ((h % 12) + m / 60) * 30;
     const min = (m + s / 60) * 6;
     const sec = s * 6;
-    const cx = size / 2, cy = size / 2, r = size / 2 - 2;
-    // Hand lengths
-    const lh = r * 0.5, lm = r * 0.75, ls = r * 0.85;
-    // Hand endpoints
+    const cx = size / 2, cy = size / 2, r = size / 2 - 4;
+    // Hand lengths (shorter for better fit)
+    const lh = r * 0.5, lm = r * 0.68, ls = r * 0.85;
+    // Hand endpoints (rounded to 2 decimals)
     function hand(angle, len) {
       const rad = (angle - 90) * Math.PI / 180;
-      return `${cx + len * Math.cos(rad)},${cy + len * Math.sin(rad)}`;
+      const x = +(cx + len * Math.cos(rad)).toFixed(2);
+      const y = +(cy + len * Math.sin(rad)).toFixed(2);
+      return `${x},${y}`;
     }
     // Hour marks
     let marks = '';
     for (let i = 0; i < 12; ++i) {
       const a = (i * 30 - 90) * Math.PI / 180;
-      const x1 = cx + (r - 4) * Math.cos(a);
-      const y1 = cy + (r - 4) * Math.sin(a);
-      const x2 = cx + r * Math.cos(a);
-      const y2 = cy + r * Math.sin(a);
+      const x1 = +(cx + (r - 4) * Math.cos(a)).toFixed(2);
+      const y1 = +(cy + (r - 4) * Math.sin(a)).toFixed(2);
+      const x2 = +(cx + r * Math.cos(a)).toFixed(2);
+      const y2 = +(cy + r * Math.sin(a)).toFixed(2);
       marks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#888" stroke-width="2" />`;
     }
     return `
@@ -371,8 +375,7 @@
         <line x1="${cx}" y1="${cy}" x2="${hand(min, lm)}" stroke="#444" stroke-width="2" stroke-linecap="round" />
         <line x1="${cx}" y1="${cy}" x2="${hand(sec, ls)}" stroke="#e44" stroke-width="1" stroke-linecap="round" />
         <circle cx="${cx}" cy="${cy}" r="2.5" fill="#222" />
-      </svg>
-    `;
+      </svg>`;
   }
 
   zones.forEach(z => {
