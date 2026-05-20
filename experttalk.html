@@ -283,8 +283,6 @@
   </div>
 </footer>
 
-<!-- Analog clock library: https://github.com/hipstersmoothie/analog-clock-js -->
-<script src="https://cdn.jsdelivr.net/npm/analog-clock-js@1.1.0/dist/analog-clock.min.js"></script>
 <script>
 (() => {
   const MEETING_HOUR_UTC = 19;
@@ -328,6 +326,55 @@
   // ── World clocks ──────────────────────────────────────────────────────────
   const meeting = nextMeetingUTC();
   const grid    = document.getElementById('clocksGrid');
+  // --- Analog clock SVG rendering ---
+  function getTimeParts(tz) {
+    const now = new Date();
+    const locale = 'en-US';
+    const parts = new Intl.DateTimeFormat(locale, {
+      timeZone: tz,
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+    }).formatToParts(now);
+    const h = Number(parts.find(p => p.type === 'hour').value);
+    const m = Number(parts.find(p => p.type === 'minute').value);
+    const s = Number(parts.find(p => p.type === 'second').value);
+    return { h, m, s };
+  }
+
+  function renderAnalogClockSVG({h, m, s}, size = 60) {
+    // Calculate angles
+    const hour = ((h % 12) + m / 60) * 30;
+    const min = (m + s / 60) * 6;
+    const sec = s * 6;
+    const cx = size / 2, cy = size / 2, r = size / 2 - 2;
+    // Hand lengths
+    const lh = r * 0.5, lm = r * 0.75, ls = r * 0.85;
+    // Hand endpoints
+    function hand(angle, len) {
+      const rad = (angle - 90) * Math.PI / 180;
+      return `${cx + len * Math.cos(rad)},${cy + len * Math.sin(rad)}`;
+    }
+    // Hour marks
+    let marks = '';
+    for (let i = 0; i < 12; ++i) {
+      const a = (i * 30 - 90) * Math.PI / 180;
+      const x1 = cx + (r - 4) * Math.cos(a);
+      const y1 = cy + (r - 4) * Math.sin(a);
+      const x2 = cx + r * Math.cos(a);
+      const y2 = cy + r * Math.sin(a);
+      marks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#888" stroke-width="2" />`;
+    }
+    return `
+      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
+        <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#bbb" stroke-width="2" />
+        ${marks}
+        <line x1="${cx}" y1="${cy}" x2="${hand(hour, lh)}" stroke="#222" stroke-width="3" stroke-linecap="round" />
+        <line x1="${cx}" y1="${cy}" x2="${hand(min, lm)}" stroke="#444" stroke-width="2" stroke-linecap="round" />
+        <line x1="${cx}" y1="${cy}" x2="${hand(sec, ls)}" stroke="#e44" stroke-width="1" stroke-linecap="round" />
+        <circle cx="${cx}" cy="${cy}" r="2.5" fill="#222" />
+      </svg>
+    `;
+  }
+
   zones.forEach(z => {
     const mt  = fmt(meeting, z.tz, { hour:'2-digit', minute:'2-digit', hour12:false });
     const day = fmt(meeting, z.tz, { weekday:'short' });
@@ -343,34 +390,20 @@
       <div class="tz">${day} · ${z.label}</div>
     `;
     grid.appendChild(el);
-    // Initialize analog clock for this timezone
-    setTimeout(() => {
-      new AnalogClock(document.getElementById(clockId), {
-        width: 60,
-        height: 60,
-        showDigital: false,
-        showMinuteMarks: true,
-        showSecondHand: true,
-        theme: 'light',
-        getTime: () => {
-          // Get current time in this timezone
-          const now = new Date();
-          // Convert to target timezone offset
-          const locale = 'en-US';
-          const tz = z.tz;
-          // Get hour, minute, second in target tz
-          const parts = new Intl.DateTimeFormat(locale, {
-            timeZone: tz,
-            hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
-          }).formatToParts(now);
-          const h = Number(parts.find(p => p.type === 'hour').value);
-          const m = Number(parts.find(p => p.type === 'minute').value);
-          const s = Number(parts.find(p => p.type === 'second').value);
-          return { hours: h, minutes: m, seconds: s };
-        }
-      });
-    }, 0);
   });
+  // Initial render
+  function updateAllClocks() {
+    zones.forEach(z => {
+      const clockId = 'analog-' + z.tz.replace(/\//g,'-');
+      const el = document.getElementById(clockId);
+      if (el) {
+        const t = getTimeParts(z.tz);
+        el.innerHTML = renderAnalogClockSVG(t, 60);
+      }
+    });
+  }
+  updateAllClocks();
+  setInterval(updateAllClocks, 1000);
 
   // ── Countdown ─────────────────────────────────────────────────────────────
   function tick() {
