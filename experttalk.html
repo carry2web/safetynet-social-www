@@ -352,7 +352,7 @@ function esc(str) {
   // Basic HTML sanitizer: allow only a safe subset of tags
   function sanitizeHTML(html) {
     if (!html) return '';
-    // Allow: b, i, em, strong, u, ul, ol, li, br, p, a[href], span, emoji, and trusted iframes
+    // Allow: b, i, em, strong, u, ul, ol, li, br, p, a[href], span, div[style], emoji, and trusted iframes
     // Remove all other tags/attributes except trusted iframes
     return String(html)
       // Remove dangerous tags except trusted iframes
@@ -364,7 +364,7 @@ function esc(str) {
         const src = srcMatch ? srcMatch[2] : '';
         if (/^(https:\/\/(www\.)?(youtube\.com|youtu\.be|player\.vimeo\.com|safetynetfoundation\.sharepoint\.com))/.test(src)) {
           // Only allow safe attributes
-          const safeAttrs = attrs.match(/(src|width|height|frameborder|allowfullscreen|scrolling|title)\s*=\s*(["'][^"']*["'])/gi);
+          const safeAttrs = attrs.match(/(src|width|height|frameborder|allowfullscreen|scrolling|title|style)\s*=\s*(["'][^"']*["'])/gi);
           return `<iframe ${(safeAttrs||[]).join(' ')}>${''}</iframe>`;
         }
         return '';
@@ -372,16 +372,22 @@ function esc(str) {
       // Sanitize other tags
       .replace(/<([a-z][a-z0-9]*)\b([^>]*)>/gi, (m, tag, attrs) => {
         tag = tag.toLowerCase();
-        if (!['b','i','em','strong','u','ul','ol','li','br','p','a','span'].includes(tag)) return '';
+        if (!['b','i','em','strong','u','ul','ol','li','br','p','a','span','div'].includes(tag)) return '';
         if (tag === 'a') {
           // Only allow href attribute
           const hrefMatch = attrs.match(/href\s*=\s*(["'])(.*?)\1/i);
           const href = hrefMatch ? hrefMatch[2] : '';
-          return `<a href="${href.replace(/"/g,'&quot;')}" target="_blank" rel="noopener">`;
+          return `<a href=\"${href.replace(/\"/g,'&quot;')}\" target=\"_blank\" rel=\"noopener\">`;
+        }
+        if (tag === 'div') {
+          // Only allow style attribute
+          const styleMatch = attrs.match(/style\s*=\s*(["'])(.*?)\1/i);
+          const style = styleMatch ? ` style=\"${styleMatch[2].replace(/\"/g,'&quot;')}\"` : '';
+          return `<div${style}>`;
         }
         return `<${tag}>`;
       })
-      .replace(/<\/(b|i|em|strong|u|ul|ol|li|br|p|a|span)>/gi, '</$1>');
+      .replace(/<\/(b|i|em|strong|u|ul|ol|li|br|p|a|span|div)>/gi, '</$1>');
   }
 
   // Convert newlines to <br> for plain text
