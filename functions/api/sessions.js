@@ -23,13 +23,46 @@ const res = (data, status = 200) =>
     headers: { 'Content-Type': 'application/json', ...CORS },
   });
 
-async function load(env) {
-  const raw = await env.SESSIONS_KV.get('sessions');
-  return raw ? JSON.parse(raw) : [];
+// Migration logic: upgrade old session formats to current format
+function migrateSessions(sessions) {
+  return sessions.map(s => {
+    // If session is a string (old format), skip (or handle as needed)
+    if (typeof s === 'string') return { id: Date.now(), date: '', title: s, speaker: '', description: '', recording: '' };
+    // If missing fields, add them
+    return {
+      id: s.id || Date.now(),
+      date: s.date || '',
+      title: s.title || '',
+      speaker: s.speaker || '',
+      description: s.description !== undefined ? s.description : '',
+      recording: s.recording !== undefined ? s.recording : ''
+    };
+  });
 }
 
+async function load(env) {
+  const raw = await env.SESSIONS_KV.get('sessions');
+  if (!raw) return [];
+  let sessions;
+  try {
+    sessions = JSON.parse(raw);
+  } catch (e) {
+    // If parsing fails, return empty and do not overwrite
+    return [];
+  }
+  // Migrate if needed
+  return migrateSessions(sessions);
+}
+
+// Save with backup: before writing, backup current sessions
 async function save(env, sessions) {
   sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+  // Backup current sessions
+  const oldRaw = await env.SESSIONS_KV.get('sessions');
+  if (oldRaw) {
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    await env.SESSIONS_KV.put(`sessions-backup-${timestamp}`, oldRaw);
+  }
   await env.SESSIONS_KV.put('sessions', JSON.stringify(sessions));
 }
 
