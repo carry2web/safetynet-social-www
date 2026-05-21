@@ -352,38 +352,30 @@ function esc(str) {
   // Basic HTML sanitizer: allow only a safe subset of tags
   function sanitizeHTML(html) {
     if (!html) return '';
-    // Allow: b, i, em, strong, u, ul, ol, li, br, p, a[href], span, div[style], emoji, and trusted iframes
-    // Remove all other tags/attributes except trusted iframes
+    // Only allow exact embed code formats from M365 (SharePoint Stream) and YouTube, with all attributes preserved for <div> and <iframe> from those sources. All other HTML is stripped except basic formatting tags.
     return String(html)
-      // Remove dangerous tags except trusted iframes
+      // Remove dangerous tags
       .replace(/<\/?(script|style|object|embed|form|input|button|svg|math)[^>]*>/gi, '')
-      // Allow iframes only from trusted sources
+      // Allow <iframe> only from trusted sources, preserve all attributes
       .replace(/<iframe\b([^>]*)>(.*?)<\/iframe>/gi, (m, attrs, inner) => {
-        // Allow only if src is trusted
         const srcMatch = attrs.match(/src\s*=\s*(["'])(.*?)\1/i);
         const src = srcMatch ? srcMatch[2] : '';
         if (/^(https:\/\/(www\.)?(youtube\.com|youtu\.be|player\.vimeo\.com|safetynetfoundation\.sharepoint\.com))/.test(src)) {
-          // Only allow safe attributes
-          const safeAttrs = attrs.match(/(src|width|height|frameborder|allowfullscreen|scrolling|title|style)\s*=\s*(["'][^"']*["'])/gi);
-          return `<iframe ${(safeAttrs||[]).join(' ')}>${''}</iframe>`;
+          return `<iframe${attrs}>${inner}</iframe>`;
         }
         return '';
       })
-      // Sanitize other tags
+      // Allow <div> with all attributes (for M365 responsive wrappers)
+      .replace(/<div\b([^>]*)>/gi, (m, attrs) => `<div${attrs}>`)
+      // Allow only basic formatting tags for everything else
       .replace(/<([a-z][a-z0-9]*)\b([^>]*)>/gi, (m, tag, attrs) => {
         tag = tag.toLowerCase();
-        if (!['b','i','em','strong','u','ul','ol','li','br','p','a','span','div'].includes(tag)) return '';
+        if (!['b','i','em','strong','u','ul','ol','li','br','p','a','span'].includes(tag)) return '';
         if (tag === 'a') {
           // Only allow href attribute
           const hrefMatch = attrs.match(/href\s*=\s*(["'])(.*?)\1/i);
           const href = hrefMatch ? hrefMatch[2] : '';
           return `<a href=\"${href.replace(/\"/g,'&quot;')}\" target=\"_blank\" rel=\"noopener\">`;
-        }
-        if (tag === 'div') {
-          // Only allow style attribute
-          const styleMatch = attrs.match(/style\s*=\s*(["'])(.*?)\1/i);
-          const style = styleMatch ? ` style=\"${styleMatch[2].replace(/\"/g,'&quot;')}\"` : '';
-          return `<div${style}>`;
         }
         return `<${tag}>`;
       })
