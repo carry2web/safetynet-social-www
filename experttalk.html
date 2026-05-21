@@ -566,13 +566,13 @@ function esc(str) {
         </div>`;
       container.appendChild(item);
     });
-    // Apply mentions rendering to presenter and description
-    container.querySelectorAll('.mentions-target').forEach(el => {
-      if (window.renderMentions) window.renderMentions(el);
-    });
-    container.querySelectorAll('.mentions-desc').forEach(el => {
-      if (window.renderMentions) window.renderMentions(el);
-    });
+    // Apply mentions rendering to presenter and description (async)
+    (async () => {
+      if (window.renderMentions) {
+        const targets = [...container.querySelectorAll('.mentions-target'), ...container.querySelectorAll('.mentions-desc')];
+        for (const el of targets) await window.renderMentions(el);
+      }
+    })();
     bindActionButtons(container);
   }
 
@@ -644,13 +644,13 @@ function esc(str) {
         </div></td>`:'<td></td>'}`;
       tbody.appendChild(tr);
     });
-    // Apply mentions rendering to presenter and description in past talks
-    tbody.querySelectorAll('.mentions-target').forEach(el => {
-      if (window.renderMentions) window.renderMentions(el);
-    });
-    tbody.querySelectorAll('.mentions-desc').forEach(el => {
-      if (window.renderMentions) window.renderMentions(el);
-    });
+    // Apply mentions rendering to presenter and description in past talks (async)
+    (async () => {
+      if (window.renderMentions) {
+        const targets = [...tbody.querySelectorAll('.mentions-target'), ...tbody.querySelectorAll('.mentions-desc')];
+        for (const el of targets) await window.renderMentions(el);
+      }
+    })();
     bindActionButtons(tbody);
   }
 
