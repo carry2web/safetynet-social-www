@@ -1,3 +1,12 @@
+  // Simple HTML escape utility
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 <!doctype html>
 <html lang="en">
 <head>
@@ -318,10 +327,24 @@
   // Basic HTML sanitizer: allow only a safe subset of tags
   function sanitizeHTML(html) {
     if (!html) return '';
-    // Allow: b, i, em, strong, u, ul, ol, li, br, p, a[href], span, emoji
-    // Remove all other tags/attributes
+    // Allow: b, i, em, strong, u, ul, ol, li, br, p, a[href], span, emoji, and trusted iframes
+    // Remove all other tags/attributes except trusted iframes
     return String(html)
-      .replace(/<\/?(script|style|iframe|object|embed|form|input|button|svg|math)[^>]*>/gi, '') // dangerous tags
+      // Remove dangerous tags except trusted iframes
+      .replace(/<\/?(script|style|object|embed|form|input|button|svg|math)[^>]*>/gi, '')
+      // Allow iframes only from trusted sources
+      .replace(/<iframe\b([^>]*)>(.*?)<\/iframe>/gi, (m, attrs, inner) => {
+        // Allow only if src is trusted
+        const srcMatch = attrs.match(/src\s*=\s*(["'])(.*?)\1/i);
+        const src = srcMatch ? srcMatch[2] : '';
+        if (/^(https:\/\/(www\.)?(youtube\.com|youtu\.be|player\.vimeo\.com|safetynetfoundation\.sharepoint\.com))/.test(src)) {
+          // Only allow safe attributes
+          const safeAttrs = attrs.match(/(src|width|height|frameborder|allowfullscreen|scrolling|title)\s*=\s*(["'][^"']*["'])/gi);
+          return `<iframe ${(safeAttrs||[]).join(' ')}>${''}</iframe>`;
+        }
+        return '';
+      })
+      // Sanitize other tags
       .replace(/<([a-z][a-z0-9]*)\b([^>]*)>/gi, (m, tag, attrs) => {
         tag = tag.toLowerCase();
         if (!['b','i','em','strong','u','ul','ol','li','br','p','a','span'].includes(tag)) return '';
