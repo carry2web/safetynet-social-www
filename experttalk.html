@@ -549,8 +549,8 @@ function esc(str) {
         </div>
         <div>
           <div class="session-title">${esc(s.title)}</div>
-          <div class="session-speaker">🎤 ${esc(s.speaker)}</div>
-          ${s.description?`<div class="session-desc">${esc(s.description)}</div>`:''}
+          <div class="session-speaker mentions-target">🎤 ${esc(s.speaker)}</div>
+          ${s.description?`<div class="session-desc mentions-desc">${formatDescription(s.description)}</div>`:''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem">
           <span class="tag-up">Upcoming</span>
@@ -560,6 +560,13 @@ function esc(str) {
           </div>`:''}
         </div>`;
       container.appendChild(item);
+    });
+    // Apply mentions rendering to presenter and description
+    container.querySelectorAll('.mentions-target').forEach(el => {
+      if (window.renderMentions) window.renderMentions(el);
+    });
+    container.querySelectorAll('.mentions-desc').forEach(el => {
+      if (window.renderMentions) window.renderMentions(el);
     });
     bindActionButtons(container);
   }
