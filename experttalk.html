@@ -1,3 +1,12 @@
+    // Simple HTML escape utility (used in render functions)
+    function esc(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
   // Simple HTML escape utility
   function esc(str) {
     return String(str)
