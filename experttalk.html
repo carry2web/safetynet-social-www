@@ -636,14 +636,21 @@ function esc(str) {
       tr.innerHTML = `
         <td class="td-date">${shortDate(s.date)}</td>
         <td class="td-title">${esc(s.title)}</td>
-        <td class="td-desc">${formatDescription(s.description)}</td>
-        <td class="td-speaker">🎤 ${esc(s.speaker)}</td>
+        <td class="td-desc mentions-desc">${formatDescription(s.description)}</td>
+        <td class="td-speaker mentions-target">🎤 ${esc(s.speaker)}</td>
         <td>${recordingCell}</td>
         ${pwd?`<td><div class="admin-actions">
           <button class="icon-btn edit" data-id="${s.id}" title="Edit">✏️</button>
           <button class="icon-btn del"  data-id="${s.id}" title="Delete">🗑</button>
         </div></td>`:'<td></td>'}`;
       tbody.appendChild(tr);
+    });
+    // Apply mentions rendering to presenter and description in past talks
+    tbody.querySelectorAll('.mentions-target').forEach(el => {
+      if (window.renderMentions) window.renderMentions(el);
+    });
+    tbody.querySelectorAll('.mentions-desc').forEach(el => {
+      if (window.renderMentions) window.renderMentions(el);
     });
     bindActionButtons(tbody);
   }
