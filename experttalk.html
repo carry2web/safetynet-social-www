@@ -271,7 +271,14 @@
               <label for="f-desc">Short description (optional)</label>
               <textarea id="f-desc" placeholder="A brief summary of what the talk covers…"></textarea>
               <div class="field-help" style="font-size:.82em;color:var(--muted);margin-top:2px">
-                You can use rich text, links, and embed code (e.g. YouTube, Vimeo, or Microsoft Stream iframes). Only trusted sources are allowed.
+                You can use rich text and links. <b>Do not paste embed code here.</b>
+              </div>
+            </div>
+            <div class="field full">
+              <label for="f-embed">Embed HTML (optional)</label>
+              <textarea id="f-embed" placeholder="Paste Microsoft Stream or YouTube embed code here. Only trusted sources are allowed."></textarea>
+              <div class="field-help" style="font-size:.82em;color:var(--muted);margin-top:2px">
+                Paste the full embed code (e.g. Microsoft Stream, YouTube, Vimeo) here. Only trusted sources are allowed. This will be rendered as an embedded video above the description.
               </div>
             </div>
             <div class="field full">
@@ -686,6 +693,7 @@ function esc(str) {
     document.getElementById('f-title').value   = s.title;
     document.getElementById('f-speaker').value = s.speaker;
     document.getElementById('f-desc').value    = s.description || '';
+    document.getElementById('f-embed').value   = s.embedHtml   || '';
     document.getElementById('f-rec').value     = s.recording   || '';
 
     document.getElementById('formTitle').textContent  = 'Edit session';
@@ -701,6 +709,7 @@ function esc(str) {
     document.getElementById('f-title').value   = '';
     document.getElementById('f-speaker').value = '';
     document.getElementById('f-desc').value    = '';
+    document.getElementById('f-embed').value   = '';
     document.getElementById('f-rec').value     = '';
     document.getElementById('formTitle').textContent   = 'Add new session';
     document.getElementById('saveSession').textContent = 'Add session';
@@ -716,6 +725,7 @@ function esc(str) {
     const title   = document.getElementById('f-title').value.trim();
     const speaker = document.getElementById('f-speaker').value.trim();
     const desc    = document.getElementById('f-desc').value.trim();
+    const embed   = document.getElementById('f-embed').value.trim();
     const rec     = document.getElementById('f-rec').value.trim();
     const msg     = document.getElementById('addMsg');
 
@@ -728,7 +738,7 @@ function esc(str) {
     const isEdit = !!editingId;
     const method = isEdit ? 'PUT' : 'POST';
     // Always send id for edit, and log payload for debugging
-    const payload = { date, title, speaker, description:desc, recording:rec, password:pwd };
+    const payload = { date, title, speaker, description:desc, embedHtml:embed, recording:rec, password:pwd };
     if (isEdit) {
       payload.id = editingId;
       console.log('Editing session:', payload);
