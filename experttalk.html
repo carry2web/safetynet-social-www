@@ -314,8 +314,36 @@
     return new Intl.DateTimeFormat('en-GB', { timeZone: tz, ...opts }).format(date);
   }
 
-  function esc(s) {
-    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+
+  // Basic HTML sanitizer: allow only a safe subset of tags
+  function sanitizeHTML(html) {
+    if (!html) return '';
+    // Allow: b, i, em, strong, u, ul, ol, li, br, p, a[href], span, emoji
+    // Remove all other tags/attributes
+    return String(html)
+      .replace(/<\/?(script|style|iframe|object|embed|form|input|button|svg|math)[^>]*>/gi, '') // dangerous tags
+      .replace(/<([a-z][a-z0-9]*)\b([^>]*)>/gi, (m, tag, attrs) => {
+        tag = tag.toLowerCase();
+        if (!['b','i','em','strong','u','ul','ol','li','br','p','a','span'].includes(tag)) return '';
+        if (tag === 'a') {
+          // Only allow href attribute
+          const hrefMatch = attrs.match(/href\s*=\s*(["'])(.*?)\1/i);
+          const href = hrefMatch ? hrefMatch[2] : '';
+          return `<a href="${href.replace(/"/g,'&quot;')}" target="_blank" rel="noopener">`;
+        }
+        return `<${tag}>`;
+      })
+      .replace(/<\/(b|i|em|strong|u|ul|ol|li|br|p|a|span)>/gi, '</$1>');
+  }
+
+  // Convert newlines to <br> for plain text
+  function formatDescription(desc) {
+    if (!desc) return '';
+    // If it looks like HTML, sanitize it; else, convert newlines
+    if (desc.includes('<') && desc.includes('>')) {
+      return sanitizeHTML(desc);
+    }
+    return sanitizeHTML(desc.replace(/\n/g, '<br>'));
   }
 
   function shortDate(iso) {
@@ -532,17 +560,24 @@
 
     toShow.forEach(s => {
       const tr = document.createElement('tr');
+      // Recording cell: embed Stream M365 if URL matches, else show Watch link
+      let recordingCell = '<span class="no-rec">—</span>';
+      if (s.recording) {
+        if (/safetynetfoundation\.sharepoint\.com\/_layouts\/15\/embed\.aspx/.test(s.recording)) {
+          recordingCell = `<iframe src="${esc(s.recording)}" width="280" height="158" frameborder="0" scrolling="no" allowfullscreen title="Session recording"></iframe>`;
+        } else {
+          recordingCell = `<a class="rec-link" href="${esc(s.recording)}" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
+            Watch
+          </a>`;
+        }
+      }
       tr.innerHTML = `
         <td class="td-date">${shortDate(s.date)}</td>
         <td class="td-title">${esc(s.title)}</td>
-        <td class="td-desc">${esc(s.description)}</td>
+        <td class="td-desc">${formatDescription(s.description)}</td>
         <td class="td-speaker">🎤 ${esc(s.speaker)}</td>
-        <td>${s.recording
-          ? `<a class="rec-link" href="${esc(s.recording)}" target="_blank" rel="noopener">
-               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
-               Watch
-             </a>`
-          : '<span class="no-rec">—</span>'}</td>
+        <td>${recordingCell}</td>
         ${pwd?`<td><div class="admin-actions">
           <button class="icon-btn edit" data-id="${s.id}" title="Edit">✏️</button>
           <button class="icon-btn del"  data-id="${s.id}" title="Delete">🗑</button>
