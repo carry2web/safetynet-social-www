@@ -74,14 +74,23 @@ export async function onRequest({ request, env }) {
 
   // All writes need a body + password
   let body;
-  try { body = await request.json(); } catch { return res({ error: 'Invalid JSON' }, 400); }
-  if (!body.password || body.password !== env.ADMIN_PASSWORD) return res({ error: 'Unauthorized' }, 401);
+  try { body = await request.json(); } catch (e) {
+    console.log('Invalid JSON:', e);
+    return res({ error: 'Invalid JSON' }, 400);
+  }
+  if (!body.password || body.password !== env.ADMIN_PASSWORD) {
+    console.log('Unauthorized attempt:', body && body.password);
+    return res({ error: 'Unauthorized' }, 401);
+  }
 
   // POST — add
   if (request.method === 'POST') {
     if (body._check) return res({ ok: true }, 200);
     const { date, title, speaker, description = '', recording = '' } = body;
-    if (!date || !title || !speaker) return res({ error: 'date, title and speaker are required' }, 400);
+    if (!date || !title || !speaker) {
+      console.log('Add failed: missing fields', { date, title, speaker });
+      return res({ error: 'date, title and speaker are required' }, 400);
+    }
     const sessions = await load(env);
     sessions.push({ id: Date.now(), date, title, speaker, description, recording });
     await save(env, sessions);
@@ -91,10 +100,16 @@ export async function onRequest({ request, env }) {
   // PUT — edit
   if (request.method === 'PUT') {
     const { id, date, title, speaker, description = '', recording = '' } = body;
-    if (!id || !date || !title || !speaker) return res({ error: 'id, date, title and speaker are required' }, 400);
+    if (!id || !date || !title || !speaker) {
+      console.log('Edit failed: missing fields', { id, date, title, speaker });
+      return res({ error: 'id, date, title and speaker are required' }, 400);
+    }
     const sessions = await load(env);
     const i = sessions.findIndex(s => s.id === id);
-    if (i === -1) return res({ error: 'Not found' }, 404);
+    if (i === -1) {
+      console.log('Edit failed: session not found', { id });
+      return res({ error: 'Not found' }, 404);
+    }
     sessions[i] = { id, date, title, speaker, description, recording };
     await save(env, sessions);
     return res({ ok: true });
