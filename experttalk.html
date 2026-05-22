@@ -131,6 +131,15 @@
     .show-more-btn:hover{border-color:var(--brand);color:var(--brand)}
     .search-count{font-size:.78rem;color:var(--muted);margin-top:.5rem}
 
+    /* Embed */
+    .session-embed{margin:.5rem 0}
+    .session-embed iframe{max-width:100%;display:block}
+    /* Mentions */
+    .mention{display:inline-flex;align-items:center;gap:.3rem;vertical-align:middle}
+    .mention-avatar{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle}
+    .mention a{color:var(--brand);text-decoration:none;font-weight:600}
+    .mention a:hover{text-decoration:underline}
+
     @media(max-width:900px){.clocks-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:640px){
       .clocks-grid{grid-template-columns:1fr 1fr}
@@ -356,47 +365,50 @@ function esc(str) {
   }
 
 
-  // Basic HTML sanitizer: allow only a safe subset of tags
-  function sanitizeHTML(html) {
+  // Strict sanitizer for description: no iframes or divs allowed
+  function sanitizeDescription(html) {
     if (!html) return '';
-    // Only allow exact embed code formats from M365 (SharePoint Stream) and YouTube, with all attributes preserved for <div> and <iframe> from those sources. All other HTML is stripped except basic formatting tags.
     return String(html)
-      // Remove dangerous tags
-      .replace(/<\/?(script|style|object|embed|form|input|button|svg|math)[^>]*>/gi, '')
-      // Allow <iframe> only from trusted sources, preserve all attributes
-      .replace(/<iframe\b([^>]*)>(.*?)<\/iframe>/gi, (m, attrs, inner) => {
-        const srcMatch = attrs.match(/src\s*=\s*(["'])(.*?)\1/i);
-        const src = srcMatch ? srcMatch[2] : '';
-        if (/^(https:\/\/(www\.)?(youtube\.com|youtu\.be|player\.vimeo\.com|safetynetfoundation\.sharepoint\.com))/.test(src)) {
-          return `<iframe${attrs}>${inner}</iframe>`;
-        }
-        return '';
-      })
-      // Allow <div> with all attributes (for M365 responsive wrappers)
-      .replace(/<div\b([^>]*)>/gi, (m, attrs) => `<div${attrs}>`)
-      // Allow only basic formatting tags for everything else
+      .replace(/<\/?(script|style|object|embed|form|input|button|svg|math|iframe|div)[^>]*>/gi, '')
       .replace(/<([a-z][a-z0-9]*)\b([^>]*)>/gi, (m, tag, attrs) => {
         tag = tag.toLowerCase();
         if (!['b','i','em','strong','u','ul','ol','li','br','p','a','span'].includes(tag)) return '';
         if (tag === 'a') {
-          // Only allow href attribute
           const hrefMatch = attrs.match(/href\s*=\s*(["'])(.*?)\1/i);
           const href = hrefMatch ? hrefMatch[2] : '';
-          return `<a href=\"${href.replace(/\"/g,'&quot;')}\" target=\"_blank\" rel=\"noopener\">`;
+          return `<a href="${href.replace(/"/g,'&quot;')}" target="_blank" rel="noopener">`;
         }
         return `<${tag}>`;
       })
-      .replace(/<\/(b|i|em|strong|u|ul|ol|li|br|p|a|span|div)>/gi, '</$1>');
+      .replace(/<\/(b|i|em|strong|u|ul|ol|li|p|a|span)>/gi, '</$1>');
   }
 
-  // Convert newlines to <br> for plain text
+  // Permissive sanitizer for embed HTML: keeps divs and trusted iframes exactly as-is
+  function sanitizeEmbedHtml(html) {
+    if (!html) return '';
+    return String(html)
+      // Strip only truly dangerous tags
+      .replace(/<\/?(script|style|object|form|input|button|svg|math)[^>]*>/gi, '')
+      // Keep iframes from trusted sources; strip all others
+      .replace(/<iframe\b([^>]*)>\s*<\/iframe>/gi, (m, attrs) => {
+        const srcMatch = attrs.match(/src\s*=\s*(["'])(.*?)\1/i);
+        const src = srcMatch ? srcMatch[2] : '';
+        return /^https:\/\/(www\.)?(safetynetfoundation\.sharepoint\.com|youtube\.com|youtu\.be|player\.vimeo\.com)/.test(src)
+          ? `<iframe${attrs}></iframe>` : '';
+      })
+      // Keep divs with all attributes
+      .replace(/<div\b([^>]*)>/gi, (m, attrs) => `<div${attrs}>`)
+      .replace(/<\/div>/gi, '</div>');
+  }
+
   function formatDescription(desc) {
     if (!desc) return '';
-    // If it looks like HTML, sanitize it; else, convert newlines
-    if (desc.includes('<') && desc.includes('>')) {
-      return sanitizeHTML(desc);
-    }
-    return sanitizeHTML(desc.replace(/\n/g, '<br>'));
+    return sanitizeDescription(desc.replace(/\n/g, '<br>'));
+  }
+
+  function formatEmbedHtml(embed) {
+    if (!embed) return '';
+    return sanitizeEmbedHtml(embed);
   }
 
   function shortDate(iso) {
@@ -555,6 +567,7 @@ function esc(str) {
         <div>
           <div class="session-title">${esc(s.title)}</div>
           <div class="session-speaker mentions-target">🎤 ${esc(s.speaker)}</div>
+          ${s.embedHtml?`<div class="session-embed">${formatEmbedHtml(s.embedHtml)}</div>`:''}
           ${s.description?`<div class="session-desc mentions-desc">${formatDescription(s.description)}</div>`:''}
         </div>
         <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem">
@@ -635,7 +648,7 @@ function esc(str) {
       tr.innerHTML = `
         <td class="td-date">${shortDate(s.date)}</td>
         <td class="td-title">${esc(s.title)}</td>
-        <td class="td-desc mentions-desc">${formatDescription(s.description)}</td>
+        <td class="td-desc">${s.embedHtml?`<div class="session-embed">${formatEmbedHtml(s.embedHtml)}</div>`:''}<div class="mentions-desc">${formatDescription(s.description)}</div></td>
         <td class="td-speaker mentions-target">🎤 ${esc(s.speaker)}</td>
         <td>${recordingCell}</td>
         ${pwd?`<td><div class="admin-actions">
@@ -813,6 +826,7 @@ function esc(str) {
   loadSessions();
 })();
 </script>
+<script src="assets/mentions.js"></script>
 
 </body>
 </html>
