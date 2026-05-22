@@ -23,19 +23,42 @@ const res = (data, status = 200) =>
     headers: { 'Content-Type': 'application/json', ...CORS },
   });
 
+/* Decode embed HTML from base64 (embedB64) or fall back to plain embedHtml */
+function decodeEmbed(body) {
+  if (body.embedB64) {
+    try {
+      // atob is available in Cloudflare Workers runtime
+      return decodeURIComponent(escape(atob(body.embedB64)));
+    } catch (_) { return ''; }
+  }
+  return body.embedHtml || '';
+}
+
 // Migration logic: upgrade old session formats to current format
 function migrateSessions(sessions) {
+  // Migrate sessions to support embedHtml field
   return sessions.map(s => {
-    // If session is a string (old format), skip (or handle as needed)
-    if (typeof s === 'string') return { id: Date.now(), date: '', title: s, speaker: '', description: '', recording: '' };
-    // If missing fields, add them
+    if (typeof s === 'string') return { id: Date.now(), date: '', title: s, speaker: '', description: '', recording: '', embedHtml: '' };
+    // Extract trusted embed code from description if present
+    let description = s.description !== undefined ? s.description : '';
+    let embedHtml = s.embedHtml !== undefined ? s.embedHtml : '';
+    // If embedHtml is missing, try to extract trusted embed code from description
+    if (!embedHtml && description && /<iframe\b[^>]*src=["']https:\/\/(www\.)?(youtube\.com|youtu\.be|player\.vimeo\.com|safetynetfoundation\.sharepoint\.com)[^>]*><\/iframe>/i.test(description)) {
+      // Extract the first trusted <iframe> (and its wrapping <div> if present)
+      const match = description.match(/(<div[^>]*>\s*)?(<iframe\b[^>]*src=["']https:\/\/(www\.)?(youtube\.com|youtu\.be|player\.vimeo\.com|safetynetfoundation\.sharepoint\.com)[^>]*><\/iframe>)(\s*<\/div>)?/i);
+      if (match) {
+        embedHtml = match[0];
+        description = description.replace(match[0], '').trim();
+      }
+    }
     return {
       id: s.id || Date.now(),
       date: s.date || '',
       title: s.title || '',
       speaker: s.speaker || '',
-      description: s.description !== undefined ? s.description : '',
-      recording: s.recording !== undefined ? s.recording : ''
+      description,
+      recording: s.recording !== undefined ? s.recording : '',
+      embedHtml
     };
   });
 }
@@ -87,12 +110,12 @@ export async function onRequest({ request, env }) {
   if (request.method === 'POST') {
     if (body._check) return res({ ok: true }, 200);
     const { date, title, speaker, description = '', recording = '' } = body;
+    const embedHtml = decodeEmbed(body);
     if (!date || !title || !speaker) {
-      console.log('Add failed: missing fields', { date, title, speaker });
       return res({ error: 'date, title and speaker are required' }, 400);
     }
     const sessions = await load(env);
-    sessions.push({ id: Date.now(), date, title, speaker, description, recording });
+    sessions.push({ id: Date.now(), date, title, speaker, description, recording, embedHtml });
     await save(env, sessions);
     return res({ ok: true });
   }
@@ -100,17 +123,14 @@ export async function onRequest({ request, env }) {
   // PUT — edit
   if (request.method === 'PUT') {
     const { id, date, title, speaker, description = '', recording = '' } = body;
+    const embedHtml = decodeEmbed(body);
     if (!id || !date || !title || !speaker) {
-      console.log('Edit failed: missing fields', { id, date, title, speaker });
       return res({ error: 'id, date, title and speaker are required' }, 400);
     }
     const sessions = await load(env);
     const i = sessions.findIndex(s => s.id === id);
-    if (i === -1) {
-      console.log('Edit failed: session not found', { id });
-      return res({ error: 'Not found' }, 404);
-    }
-    sessions[i] = { id, date, title, speaker, description, recording };
+    if (i === -1) return res({ error: 'Not found' }, 404);
+    sessions[i] = { id, date, title, speaker, description, recording, embedHtml };
     await save(env, sessions);
     return res({ ok: true });
   }

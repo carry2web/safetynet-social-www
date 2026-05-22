@@ -1,21 +1,3 @@
-    // Simple HTML escape utility (used in render functions)
-    function esc(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
-  // Simple HTML escape utility
-  function esc(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;')
-      .replace(/'/g, '&#39;');
-  }
 <!doctype html>
 <html lang="en">
 <head>
@@ -32,7 +14,6 @@
   <meta property="og:image" content="https://www.safetynet.social/assets/img/og-card.jpg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
-  <meta property="og:image:alt" content="SafetyNet Expert Talk" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@SafetyNetDeSo" />
   <meta name="twitter:title" content="SafetyNet Expert Talk" />
@@ -42,12 +23,9 @@
   <link rel="stylesheet" href="assets/styles.css" />
   <style>
     /* Teams button */
-    .btn-teams{display:inline-flex;align-items:center;gap:.6rem;background:#6264a7;color:#fff;padding:.65rem 1.1rem;border-radius:12px;font-weight:700;text-decoration:none}
+    .btn-teams{display:inline-flex;align-items:center;gap:.6rem;background:#6264a7;color:#fff;padding:.65rem 1.2rem;border-radius:12px;font-weight:700;text-decoration:none}
     .btn-teams:hover{background:#7b7dc2;text-decoration:none}
     .btn-teams svg{width:20px;height:20px;flex-shrink:0}
-
-    /* Badge */
-    .meeting-badge{display:inline-flex;align-items:center;gap:.5rem;background:var(--brand);color:var(--ink);font-weight:700;font-size:.85rem;padding:.35rem .85rem;border-radius:999px}
 
     /* Countdown */
     .countdown{display:flex;gap:.75rem;flex-wrap:wrap;margin-top:1rem}
@@ -61,43 +39,52 @@
     .clock-card .flag{font-size:1.75rem;line-height:1}
     .clock-card .city{font-size:.78rem;color:var(--muted);margin:.3rem 0 .45rem}
     .clock-card .mtime{font-size:1.45rem;font-weight:700;color:var(--brand)}
-    .clock-card .tz{font-size:.75rem;color:var(--muted);margin-top:.15rem}
-    .clock-card .clnow{font-size:.8rem;color:var(--muted);margin-top:.5rem;border-top:1px solid var(--border);padding-top:.5rem}
-    .clock-card .clnow span{color:var(--txt);font-weight:600}
+    .clock-card .tz-lbl{font-size:.75rem;color:var(--muted);margin-top:.15rem}
 
-    /* Upcoming sessions */
-    .session-list{display:flex;flex-direction:column;gap:.75rem;margin-top:1rem}
-    .session-item{display:grid;grid-template-columns:110px 1fr auto;gap:.75rem 1rem;align-items:start;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.85rem 1rem}
+    /* Section label */
+    .section-label{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:1.5rem 0 .5rem}
+
+    /* Upcoming cards */
+    .session-list{display:flex;flex-direction:column;gap:.75rem;margin-top:.5rem}
+    .session-card{display:grid;grid-template-columns:110px 1fr auto;gap:.75rem 1rem;align-items:start;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:.85rem 1rem}
     .session-date{font-size:.82rem;color:var(--muted);padding-top:.1rem}
     .session-date strong{display:block;font-size:1rem;color:var(--brand)}
     .session-title{font-weight:700;margin-bottom:.2rem}
-    .session-speaker{font-size:.85rem;color:var(--muted)}
-    .session-desc{font-size:.85rem;color:var(--muted);margin-top:.25rem}
+    .session-speaker{font-size:.85rem;color:var(--muted);margin-bottom:.25rem}
+    .session-desc{font-size:.85rem;color:var(--muted)}
+    .session-embed{margin:.5rem 0}
+    .session-embed iframe{max-width:100%;display:block;border:none}
     .tag-up{font-size:.72rem;font-weight:700;background:var(--brand);color:var(--ink);padding:.2rem .55rem;border-radius:999px;white-space:nowrap}
 
     /* Past talks table */
-    .past-table{width:100%;border-collapse:collapse;margin-top:1rem;font-size:.9rem}
+    .past-table{width:100%;border-collapse:collapse;margin-top:.5rem;font-size:.9rem}
     .past-table th{text-align:left;padding:.6rem .75rem;color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid var(--border);font-weight:600}
     .past-table td{padding:.65rem .75rem;border-bottom:1px solid var(--border);vertical-align:top}
     .past-table tr:last-child td{border-bottom:none}
     .past-table tr:hover td{background:rgba(255,255,255,.03)}
-    .past-table .td-date{color:var(--muted);white-space:nowrap;font-size:.82rem}
-    .past-table .td-title{font-weight:600}
-    .past-table .td-desc{color:var(--muted);font-size:.82rem}
-    .past-table .td-speaker{color:var(--muted);white-space:nowrap}
+    .td-date{color:var(--muted);white-space:nowrap;font-size:.82rem}
+    .td-title{font-weight:600}
+    .td-speaker{font-size:.85rem}
+    .td-media{font-size:.82rem;color:var(--muted)}
     .rec-link{display:inline-flex;align-items:center;gap:.3rem;color:var(--brand);font-size:.82rem;white-space:nowrap}
     .rec-link svg{width:14px;height:14px;flex-shrink:0}
     .no-rec{color:var(--muted);font-size:.82rem;font-style:italic}
-    .admin-actions{display:flex;gap:.4rem;justify-content:flex-end}
+
+    /* Search & show-more */
+    .search-wrap{position:relative;max-width:360px}
+    .search-wrap svg{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);pointer-events:none}
+    .search-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--txt);border-radius:8px;padding:.5rem .75rem .5rem 2.1rem;font-size:.9rem;font-family:inherit}
+    .search-input:focus{outline:none;border-color:var(--brand)}
+    .search-input::placeholder{color:var(--muted)}
+    .search-count{font-size:.78rem;color:var(--muted)}
+    .show-more-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:.4rem 1rem;border-radius:8px;cursor:pointer;font-size:.83rem;margin-top:.75rem;width:100%}
+    .show-more-btn:hover{border-color:var(--brand);color:var(--brand)}
 
     /* Icon buttons */
-    .icon-btn{background:none;border:none;cursor:pointer;padding:.25rem .4rem;border-radius:6px;line-height:1;font-size:.95rem}
+    .icon-btn{background:none;border:none;cursor:pointer;padding:.25rem .4rem;border-radius:6px;line-height:1;font-size:.95rem;color:var(--muted)}
     .icon-btn.edit:hover{color:var(--brand);background:rgba(93,208,255,.1)}
     .icon-btn.del:hover{color:#f87171;background:rgba(248,113,113,.1)}
-    .icon-btn{color:var(--muted)}
-
-    /* Section divider */
-    .section-label{font-size:.75rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin:1.5rem 0 .5rem}
+    .act-cell{display:flex;gap:.25rem;justify-content:flex-end}
 
     /* Admin */
     .admin-toggle{background:none;border:1px solid var(--border);color:var(--muted);padding:.35rem .75rem;border-radius:8px;cursor:pointer;font-size:.82rem}
@@ -111,42 +98,28 @@
     .field input,.field textarea{background:var(--card);border:1px solid var(--border);color:var(--txt);border-radius:8px;padding:.55rem .75rem;font-size:.95rem;font-family:inherit;width:100%}
     .field input:focus,.field textarea:focus{outline:none;border-color:var(--brand)}
     .field textarea{resize:vertical;min-height:64px}
+    .field-hint{font-size:.78rem;color:var(--muted);margin-top:.2rem}
     .admin-msg{font-size:.85rem;margin-top:.5rem;min-height:1.2em}
     .admin-msg.ok{color:var(--brand)}
     .admin-msg.err{color:#f87171}
-    .edit-mode-banner{background:rgba(93,208,255,.08);border:1px solid rgba(93,208,255,.3);border-radius:8px;padding:.5rem .75rem;font-size:.82rem;color:var(--brand);margin-bottom:.75rem;display:none}
-    .edit-mode-banner.show{display:block}
+    .edit-banner{background:rgba(93,208,255,.08);border:1px solid rgba(93,208,255,.3);border-radius:8px;padding:.5rem .75rem;font-size:.82rem;color:var(--brand);margin-bottom:.75rem;display:none}
+    .edit-banner.show{display:block}
+    .empty-state{color:var(--muted);font-style:italic;padding:.5rem 0}
 
-    .empty-state{color:var(--muted);font-style:italic;margin-top:.5rem}
-
-    /* Search bar */
-    .search-wrap{position:relative;max-width:360px}
-    .search-wrap svg{position:absolute;left:.65rem;top:50%;transform:translateY(-50%);width:16px;height:16px;color:var(--muted);pointer-events:none}
-    .search-input{width:100%;background:var(--card);border:1px solid var(--border);color:var(--txt);border-radius:8px;padding:.5rem .75rem .5rem 2.1rem;font-size:.9rem;font-family:inherit}
-    .search-input:focus{outline:none;border-color:var(--brand)}
-    .search-input::placeholder{color:var(--muted)}
-
-    /* Show more */
-    .show-more-btn{background:none;border:1px solid var(--border);color:var(--muted);padding:.4rem 1rem;border-radius:8px;cursor:pointer;font-size:.83rem;margin-top:.75rem;width:100%}
-    .show-more-btn:hover{border-color:var(--brand);color:var(--brand)}
-    .search-count{font-size:.78rem;color:var(--muted);margin-top:.5rem}
-
-    /* Embed */
-    .session-embed{margin:.5rem 0}
-    .session-embed iframe{max-width:100%;display:block}
     /* Mentions */
     .mention{display:inline-flex;align-items:center;gap:.3rem;vertical-align:middle}
     .mention-avatar{width:22px;height:22px;border-radius:50%;object-fit:cover;vertical-align:middle}
     .mention a{color:var(--brand);text-decoration:none;font-weight:600}
     .mention a:hover{text-decoration:underline}
 
+    /* Responsive */
     @media(max-width:900px){.clocks-grid{grid-template-columns:repeat(2,1fr)}}
     @media(max-width:640px){
       .clocks-grid{grid-template-columns:1fr 1fr}
-      .session-item{grid-template-columns:90px 1fr auto}
+      .session-card{grid-template-columns:80px 1fr}
       .form-grid{grid-template-columns:1fr}
       .form-grid .full{grid-column:1}
-      .past-table .td-desc{display:none}
+      .td-media{display:none}
     }
   </style>
 </head>
@@ -173,18 +146,18 @@
 <main class="main">
   <div class="container">
 
-    <!-- ── Hero ── -->
+    <!-- Hero -->
     <section class="card mb-4">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:1.5rem">
         <div style="flex:1;min-width:260px">
-          <span class="meeting-badge">
+          <span style="display:inline-flex;align-items:center;gap:.5rem;background:var(--brand);color:var(--ink);font-weight:700;font-size:.85rem;padding:.35rem .85rem;border-radius:999px">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M16 8l4-3v10l-4-3"/></svg>
             Weekly · Every Sunday · 19:00 UTC
           </span>
           <h1 class="mt-2 mb-2" style="font-size:2rem">SafetyNet Expert Talk</h1>
           <p class="muted" style="max-width:540px;margin:0 0 1.25rem">
             A weekly Microsoft Teams video session where SafetyNet invites experts to share knowledge on DeSo,
-            blockchain infrastructure, decentralized social, and the broader Web3 ecosystem.
+            blockchain infrastructure, decentralised social, and the broader Web3 ecosystem.
             Open to the whole community — all are welcome.
           </p>
           <a class="btn-teams" href="https://teams.microsoft.com/meet/391289474755?p=tyG9sZwebuwrxeIA76" target="_blank" rel="noopener">
@@ -204,20 +177,18 @@
       </div>
     </section>
 
-    <!-- ── Schedule ── -->
+    <!-- Sessions -->
     <section class="card mb-4">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem">
         <h2 class="mt-0 mb-0">Session Schedule</h2>
         <button class="admin-toggle" id="adminToggle">⚙ Manage sessions</button>
       </div>
 
-      <!-- Upcoming -->
       <div class="section-label">Upcoming</div>
       <div id="upcomingList" class="session-list">
-        <p class="empty-state" id="upcomingEmpty" style="display:none">No upcoming sessions scheduled yet — check back soon.</p>
+        <p class="empty-state" id="upcomingEmpty" style="display:none">No upcoming sessions scheduled yet.</p>
       </div>
 
-      <!-- Past talks -->
       <div class="section-label" style="margin-top:2rem">Past talks</div>
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:.75rem">
         <div class="search-wrap">
@@ -232,14 +203,14 @@
             <tr>
               <th>Date</th>
               <th>Title</th>
-              <th class="td-desc">Description</th>
               <th>Presenter</th>
+              <th class="td-media">Description / Embed</th>
               <th>Recording</th>
-              <th id="actionsHeader" style="display:none"></th>
+              <th id="actHdr" style="display:none"></th>
             </tr>
           </thead>
           <tbody id="pastBody">
-            <tr id="pastEmpty"><td colspan="6" class="empty-state" style="padding:.75rem">No past talks yet.</td></tr>
+            <tr id="pastEmpty"><td colspan="6" class="empty-state">No past talks yet.</td></tr>
           </tbody>
         </table>
       </div>
@@ -247,7 +218,6 @@
 
       <!-- Admin panel -->
       <div class="admin-panel" id="adminPanel">
-        <!-- Password gate -->
         <div id="adminGate">
           <p class="muted" style="font-size:.85rem;margin:0 0 .75rem">Enter the admin code to manage sessions:</p>
           <div style="display:flex;gap:.6rem;flex-wrap:wrap">
@@ -257,11 +227,9 @@
           </div>
           <p class="admin-msg err" id="loginErr"></p>
         </div>
-
-        <!-- Admin form -->
         <div id="adminForm" style="display:none">
-          <div class="edit-mode-banner" id="editBanner">✏️ Editing session — save to update, or <a href="#" id="cancelEdit">cancel</a></div>
-          <h3 class="mt-0 mb-4" style="font-size:1rem" id="formTitle">Add new session</h3>
+          <div class="edit-banner" id="editBanner">✏️ Editing session — <a href="#" id="cancelEdit">cancel</a></div>
+          <h3 class="mt-0 mb-4" id="formTitle" style="font-size:1rem">Add new session</h3>
           <input type="hidden" id="f-id">
           <div class="form-grid">
             <div class="field">
@@ -270,7 +238,7 @@
             </div>
             <div class="field">
               <label for="f-speaker">Presenter</label>
-              <input type="text" id="f-speaker" placeholder="e.g. @username or Full Name">
+              <input type="text" id="f-speaker" placeholder="@username or Full Name">
             </div>
             <div class="field full">
               <label for="f-title">Talk title</label>
@@ -278,40 +246,32 @@
             </div>
             <div class="field full">
               <label for="f-desc">Short description (optional)</label>
-              <textarea id="f-desc" placeholder="A brief summary of what the talk covers…"></textarea>
-              <div class="field-help" style="font-size:.82em;color:var(--muted);margin-top:2px">
-                You can use rich text and links. <b>Do not paste embed code here.</b>
-              </div>
+              <textarea id="f-desc" rows="3" placeholder="A brief summary…"></textarea>
             </div>
             <div class="field full">
               <label for="f-embed">Embed HTML (optional)</label>
-              <textarea id="f-embed" placeholder="Paste Microsoft Stream or YouTube embed code here. Only trusted sources are allowed."></textarea>
-              <div class="field-help" style="font-size:.82em;color:var(--muted);margin-top:2px">
-                Paste the full embed code (e.g. Microsoft Stream, YouTube, Vimeo) here. Only trusted sources are allowed. This will be rendered as an embedded video above the description.
-              </div>
+              <textarea id="f-embed" rows="4" placeholder="Paste Microsoft Stream, YouTube or Vimeo embed code here…"></textarea>
+              <div class="field-hint">Paste the full embed code. Only Microsoft Stream, YouTube and Vimeo are displayed.</div>
             </div>
             <div class="field full">
               <label for="f-rec">Recording URL (optional)</label>
               <input type="url" id="f-rec" placeholder="https://…">
-              <div class="field-help" style="font-size:.82em;color:var(--muted);margin-top:2px">
-                Paste a direct video link (e.g. Microsoft Stream, YouTube, Vimeo). If the link is from a supported service, it will be embedded automatically. Do not paste full HTML embed code here.
-              </div>
             </div>
           </div>
           <div class="btn-row mt-4">
-            <button class="btn btn-primary" id="saveSession" type="button">Add session</button>
-            <button class="btn btn-ghost" id="adminLogout" type="button">Lock</button>
+            <button class="btn btn-primary" id="saveBtn" type="button">Add session</button>
+            <button class="btn btn-ghost" id="lockBtn" type="button">Lock</button>
           </div>
-          <p class="admin-msg" id="addMsg"></p>
+          <p class="admin-msg" id="saveMsg"></p>
         </div>
       </div>
     </section>
 
-    <!-- ── World clocks ── -->
+    <!-- World clocks -->
     <section class="card">
       <h2 class="mt-0 mb-4">Meeting time around the world <span style="font-size:.85rem;font-weight:400;color:var(--muted)">(24-hour clock)</span></h2>
       <div class="clocks-grid" id="clocksGrid"></div>
-      <p class="muted mt-4" style="font-size:.82rem">Times shown for the next upcoming Sunday. Analog clocks show current local time in each city.</p>
+      <p class="muted mt-4" style="font-size:.82rem">Times shown for the next upcoming Sunday at 19:00 UTC. Analog clocks show current local time.</p>
     </section>
 
   </div>
@@ -324,242 +284,184 @@
 </footer>
 
 <script>
-// Simple HTML escape utility (used in render functions)
-function esc(str) {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#39;');
-}
-(() => {
-  const MEETING_HOUR_UTC = 19;
-  const MEETING_DAY      = 0; // Sunday
-  const API              = '/api/sessions';
+(function () {
+  'use strict';
 
-  const zones = [
-    { flag:'🇺🇸', city:'New York',    tz:'America/New_York',    label:'ET'        },
-    { flag:'🇺🇸', city:'Los Angeles', tz:'America/Los_Angeles', label:'PT'        },
-    { flag:'🇬🇧', city:'London',      tz:'Europe/London',       label:'GMT/BST'   },
-    { flag:'🇳🇱', city:'Amsterdam',   tz:'Europe/Amsterdam',    label:'CET/CEST'  },
-    { flag:'🇮🇳', city:'Mumbai',      tz:'Asia/Kolkata',        label:'IST'       },
-    { flag:'🇸🇬', city:'Singapore',   tz:'Asia/Singapore',      label:'SGT'       },
-    { flag:'🇯🇵', city:'Tokyo',       tz:'Asia/Tokyo',          label:'JST'       },
-    { flag:'🇦🇺', city:'Sydney',      tz:'Australia/Sydney',    label:'AEST/AEDT' },
+  /* ── Constants ─────────────────────────────────────────────────────────── */
+  const API          = '/api/sessions';
+  const MEETING_UTC  = 19;   // hour
+  const MEETING_DOW  = 0;    // Sunday
+  const INITIAL_SHOW = 5;
+  const TRUSTED      = [
+    'safetynetfoundation.sharepoint.com',
+    'youtube.com', 'www.youtube.com',
+    'youtu.be', 'player.vimeo.com'
   ];
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
-  // (esc function now defined globally above)
+  /* ── Utilities ─────────────────────────────────────────────────────────── */
+  function esc(s) {
+    return String(s)
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function pad(n) { return String(n).padStart(2,'0'); }
+
+  function shortDate(iso) {
+    return new Date(iso + 'T19:00:00Z')
+      .toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'});
+  }
+
+  /* Encode UTF-8 string to base64 — keeps embed HTML safe through any WAF */
+  function toB64(str) {
+    try { return btoa(unescape(encodeURIComponent(str))); }
+    catch (_) { return btoa(str); }
+  }
+
+  /* DOM-based sanitizer for plain description text */
+  function sanitizeDesc(html) {
+    if (!html) return '';
+    const d = document.createElement('div');
+    d.innerHTML = html;
+    d.querySelectorAll('script,style,iframe,object,embed,form,input,button,svg').forEach(el => el.remove());
+    d.querySelectorAll('*').forEach(el => {
+      [...el.attributes].forEach(a => {
+        if (/^on/i.test(a.name) || (a.name === 'href' && /^javascript:/i.test(a.value)))
+          el.removeAttribute(a.name);
+      });
+    });
+    return d.innerHTML;
+  }
+
+  /* DOM-based sanitizer for embed HTML — keeps divs + trusted iframes only */
+  function sanitizeEmbed(html) {
+    if (!html) return '';
+    const d = document.createElement('div');
+    d.innerHTML = html;
+    d.querySelectorAll('script,style,object,embed,form,input,button,svg').forEach(el => el.remove());
+    d.querySelectorAll('*').forEach(el => {
+      [...el.attributes].forEach(a => {
+        if (/^on/i.test(a.name)) el.removeAttribute(a.name);
+      });
+    });
+    d.querySelectorAll('iframe').forEach(iframe => {
+      try {
+        const host = new URL(iframe.getAttribute('src') || '').hostname;
+        if (!TRUSTED.some(o => host === o || host.endsWith('.'+o))) iframe.remove();
+      } catch (_) { iframe.remove(); }
+    });
+    return d.innerHTML;
+  }
+
+  /* ── Next meeting ───────────────────────────────────────────────────────── */
   function nextMeetingUTC() {
     const now  = new Date();
-    const next = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), MEETING_HOUR_UTC, 0, 0, 0));
-    let diff   = (MEETING_DAY - next.getUTCDay() + 7) % 7;
+    const next = new Date(Date.UTC(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate(),MEETING_UTC));
+    let   diff = (MEETING_DOW - next.getUTCDay() + 7) % 7;
     if (diff === 0 && now >= next) diff = 7;
     next.setUTCDate(next.getUTCDate() + diff);
     return next;
   }
 
-  function fmt(date, tz, opts) {
-    return new Intl.DateTimeFormat('en-GB', { timeZone: tz, ...opts }).format(date);
+  /* ── Countdown ─────────────────────────────────────────────────────────── */
+  function tickCountdown() {
+    const ms = nextMeetingUTC() - new Date();
+    document.getElementById('cd-d').textContent = pad(Math.floor(ms/86400000));
+    document.getElementById('cd-h').textContent = pad(Math.floor(ms%86400000/3600000));
+    document.getElementById('cd-m').textContent = pad(Math.floor(ms%3600000/60000));
+    document.getElementById('cd-s').textContent = pad(Math.floor(ms%60000/1000));
+  }
+  tickCountdown();
+  setInterval(tickCountdown,1000);
+
+  /* ── World clocks ──────────────────────────────────────────────────────── */
+  const ZONES = [
+    {flag:'🇺🇸',city:'New York',   tz:'America/New_York',   lbl:'ET'},
+    {flag:'🇺🇸',city:'Los Angeles',tz:'America/Los_Angeles',lbl:'PT'},
+    {flag:'🇬🇧',city:'London',     tz:'Europe/London',      lbl:'GMT/BST'},
+    {flag:'🇳🇱',city:'Amsterdam',  tz:'Europe/Amsterdam',   lbl:'CET/CEST'},
+    {flag:'🇮🇳',city:'Mumbai',     tz:'Asia/Kolkata',       lbl:'IST'},
+    {flag:'🇸🇬',city:'Singapore',  tz:'Asia/Singapore',     lbl:'SGT'},
+    {flag:'🇯🇵',city:'Tokyo',      tz:'Asia/Tokyo',         lbl:'JST'},
+    {flag:'🇦🇺',city:'Sydney',     tz:'Australia/Sydney',   lbl:'AEST'},
+  ];
+
+  function timeParts(tz) {
+    const p = new Intl.DateTimeFormat('en-US',{timeZone:tz,hour12:false,hour:'2-digit',minute:'2-digit',second:'2-digit'}).formatToParts(new Date());
+    return {h:+p.find(x=>x.type==='hour').value, m:+p.find(x=>x.type==='minute').value, s:+p.find(x=>x.type==='second').value};
   }
 
-
-  // Strict sanitizer for description: no iframes or divs allowed
-  function sanitizeDescription(html) {
-    if (!html) return '';
-    return String(html)
-      .replace(/<\/?(script|style|object|embed|form|input|button|svg|math|iframe|div)[^>]*>/gi, '')
-      .replace(/<([a-z][a-z0-9]*)\b([^>]*)>/gi, (m, tag, attrs) => {
-        tag = tag.toLowerCase();
-        if (!['b','i','em','strong','u','ul','ol','li','br','p','a','span'].includes(tag)) return '';
-        if (tag === 'a') {
-          const hrefMatch = attrs.match(/href\s*=\s*(["'])(.*?)\1/i);
-          const href = hrefMatch ? hrefMatch[2] : '';
-          return `<a href="${href.replace(/"/g,'&quot;')}" target="_blank" rel="noopener">`;
-        }
-        return `<${tag}>`;
-      })
-      .replace(/<\/(b|i|em|strong|u|ul|ol|li|p|a|span)>/gi, '</$1>');
+  function clockSVG({h,m,s},size=60) {
+    const cx=size/2,cy=size/2,r=size/2-4;
+    const pt=(deg,len)=>{const rad=(deg-90)*Math.PI/180;return{x:+(cx+len*Math.cos(rad)).toFixed(2),y:+(cy+len*Math.sin(rad)).toFixed(2)};};
+    const lh=pt(((h%12)+m/60)*30,r*.50), lm=pt((m+s/60)*6,r*.68), ls=pt(s*6,r*.85);
+    let mk='';
+    for(let i=0;i<12;i++){const a=(i*30-90)*Math.PI/180;mk+=`<line x1="${+(cx+(r-4)*Math.cos(a)).toFixed(2)}" y1="${+(cy+(r-4)*Math.sin(a)).toFixed(2)}" x2="${+(cx+r*Math.cos(a)).toFixed(2)}" y2="${+(cy+r*Math.sin(a)).toFixed(2)}" stroke="#888" stroke-width="2"/>`;}
+    return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}"><circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#bbb" stroke-width="2"/>${mk}<line x1="${cx}" y1="${cy}" x2="${lh.x}" y2="${lh.y}" stroke="#222" stroke-width="3" stroke-linecap="round"/><line x1="${cx}" y1="${cy}" x2="${lm.x}" y2="${lm.y}" stroke="#444" stroke-width="2" stroke-linecap="round"/><line x1="${cx}" y1="${cy}" x2="${ls.x}" y2="${ls.y}" stroke="#e44" stroke-width="1" stroke-linecap="round"/><circle cx="${cx}" cy="${cy}" r="2.5" fill="#222"/></svg>`;
   }
 
-  // Permissive sanitizer for embed HTML: keeps divs and trusted iframes exactly as-is
-  function sanitizeEmbedHtml(html) {
-    if (!html) return '';
-    return String(html)
-      // Strip only truly dangerous tags
-      .replace(/<\/?(script|style|object|form|input|button|svg|math)[^>]*>/gi, '')
-      // Keep iframes from trusted sources; strip all others
-      .replace(/<iframe\b([^>]*)>\s*<\/iframe>/gi, (m, attrs) => {
-        const srcMatch = attrs.match(/src\s*=\s*(["'])(.*?)\1/i);
-        const src = srcMatch ? srcMatch[2] : '';
-        return /^https:\/\/(www\.)?(safetynetfoundation\.sharepoint\.com|youtube\.com|youtu\.be|player\.vimeo\.com)/.test(src)
-          ? `<iframe${attrs}></iframe>` : '';
-      })
-      // Keep divs with all attributes
-      .replace(/<div\b([^>]*)>/gi, (m, attrs) => `<div${attrs}>`)
-      .replace(/<\/div>/gi, '</div>');
-  }
-
-  function formatDescription(desc) {
-    if (!desc) return '';
-    return sanitizeDescription(desc.replace(/\n/g, '<br>'));
-  }
-
-  function formatEmbedHtml(embed) {
-    if (!embed) return '';
-    return sanitizeEmbedHtml(embed);
-  }
-
-  function shortDate(iso) {
-    const d = new Date(iso + 'T19:00:00Z');
-    return d.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' });
-  }
-
-  // ── World clocks ──────────────────────────────────────────────────────────
-  const meeting = nextMeetingUTC();
-  const grid    = document.getElementById('clocksGrid');
-  // --- Analog clock SVG rendering ---
-
-  function getTimeParts(tz) {
-    // Get the current time in the target timezone using Date and locale string parsing
-    const now = new Date();
-    // Use toLocaleString to get the correct time in the target timezone
-    const locale = 'en-US';
-    const options = { timeZone: tz, hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' };
-    const parts = new Intl.DateTimeFormat(locale, options).formatToParts(now);
-    // Defensive: fallback to 0 if not found
-    const h = Number(parts.find(p => p.type === 'hour')?.value || 0);
-    const m = Number(parts.find(p => p.type === 'minute')?.value || 0);
-    const s = Number(parts.find(p => p.type === 'second')?.value || 0);
-    return { h, m, s };
-  }
-
-  function renderAnalogClockSVG({h, m, s}, size = 60) {
-    // Calculate angles
-    const hour = ((h % 12) + m / 60) * 30;
-    const min = (m + s / 60) * 6;
-    const sec = s * 6;
-    const cx = size / 2, cy = size / 2, r = size / 2 - 4;
-    // Hand lengths (shorter for better fit)
-    const lh = r * 0.5, lm = r * 0.68, ls = r * 0.85;
-    // Hand endpoints (rounded to 2 decimals)
-    function hand(angle, len) {
-      const rad = (angle - 90) * Math.PI / 180;
-      return {
-        x: +(cx + len * Math.cos(rad)).toFixed(2),
-        y: +(cy + len * Math.sin(rad)).toFixed(2)
-      };
-    }
-    // Hour marks
-    let marks = '';
-    for (let i = 0; i < 12; ++i) {
-      const a = (i * 30 - 90) * Math.PI / 180;
-      const x1 = +(cx + (r - 4) * Math.cos(a)).toFixed(2);
-      const y1 = +(cy + (r - 4) * Math.sin(a)).toFixed(2);
-      const x2 = +(cx + r * Math.cos(a)).toFixed(2);
-      const y2 = +(cy + r * Math.sin(a)).toFixed(2);
-      marks += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="#888" stroke-width="2" />`;
-    }
-    const hourHand = hand(hour, lh);
-    const minHand = hand(min, lm);
-    const secHand = hand(sec, ls);
-    return `
-      <svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">
-        <circle cx="${cx}" cy="${cy}" r="${r}" fill="#fff" stroke="#bbb" stroke-width="2" />
-        ${marks}
-        <line x1="${cx}" y1="${cy}" x2="${hourHand.x}" y2="${hourHand.y}" stroke="#222" stroke-width="3" stroke-linecap="round" />
-        <line x1="${cx}" y1="${cy}" x2="${minHand.x}" y2="${minHand.y}" stroke="#444" stroke-width="2" stroke-linecap="round" />
-        <line x1="${cx}" y1="${cy}" x2="${secHand.x}" y2="${secHand.y}" stroke="#e44" stroke-width="1" stroke-linecap="round" />
-        <circle cx="${cx}" cy="${cy}" r="2.5" fill="#222" />
-      </svg>`;
-  }
-
-  zones.forEach(z => {
-    const mt  = fmt(meeting, z.tz, { hour:'2-digit', minute:'2-digit', hour12:false });
-    const day = fmt(meeting, z.tz, { weekday:'short' });
-    const clockId = 'analog-' + z.tz.replace(/\//g,'-');
-    const digitalId = 'digital-' + z.tz.replace(/\//g,'-');
+  const mtg  = nextMeetingUTC();
+  const cgrid = document.getElementById('clocksGrid');
+  ZONES.forEach(z => {
+    const mt  = new Intl.DateTimeFormat('en-GB',{timeZone:z.tz,hour:'2-digit',minute:'2-digit',hour12:false}).format(mtg);
+    const day = new Intl.DateTimeFormat('en-GB',{timeZone:z.tz,weekday:'short'}).format(mtg);
+    const id  = 'ck-'+z.tz.replace(/\W/g,'-');
     const el  = document.createElement('div');
-    el.className = 'clock-card';
-    el.innerHTML = `
-      <div class="flag">${z.flag}</div>
-      <div class="city">${z.city}</div>
-      <div class="analog-clock-wrap" style="display:flex;justify-content:center;margin:0.5rem 0 0.7rem">
-        <div id="${clockId}" style="width:60px;height:60px;"></div>
-      </div>
-      <div id="${digitalId}" class="digital-clock" style="font-size:1.1rem;font-weight:600;margin-bottom:.2rem"></div>
-      <div class="tz">${day} · ${z.label}</div>
-    `;
-    grid.appendChild(el);
+    el.className='clock-card';
+    el.innerHTML=`<div class="flag">${z.flag}</div><div class="city">${z.city}</div><div style="display:flex;justify-content:center;margin:.5rem 0 .6rem"><div id="${id}-a"></div></div><div id="${id}-d" class="mtime"></div><div class="tz-lbl">${day} ${mt} · ${z.lbl}</div>`;
+    cgrid.appendChild(el);
   });
-  // Initial render
-  function pad(n) { return n.toString().padStart(2, '0'); }
-  function updateAllClocks() {
-    zones.forEach(z => {
-      const clockId = 'analog-' + z.tz.replace(/\//g,'-');
-      const digitalId = 'digital-' + z.tz.replace(/\//g,'-');
-      const el = document.getElementById(clockId);
-      const digitalEl = document.getElementById(digitalId);
-      if (el) {
-        const t = getTimeParts(z.tz);
-        el.innerHTML = renderAnalogClockSVG(t, 60);
-        if (digitalEl) {
-          digitalEl.textContent = `${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`;
-        }
-      }
+  function updateClocks() {
+    ZONES.forEach(z=>{
+      const id=`ck-${z.tz.replace(/\W/g,'-')}`;
+      const t=timeParts(z.tz);
+      const a=document.getElementById(id+'-a'), d=document.getElementById(id+'-d');
+      if(a) a.innerHTML=clockSVG(t,60);
+      if(d) d.textContent=`${pad(t.h)}:${pad(t.m)}:${pad(t.s)}`;
     });
   }
-  updateAllClocks();
-  setInterval(updateAllClocks, 1000);
+  updateClocks();
+  setInterval(updateClocks,1000);
 
-  // ── Countdown ─────────────────────────────────────────────────────────────
-  function tick() {
-    const diff = nextMeetingUTC() - new Date();
-    document.getElementById('cd-d').textContent = String(Math.floor(diff/86400000)).padStart(2,'0');
-    document.getElementById('cd-h').textContent = String(Math.floor((diff%86400000)/3600000)).padStart(2,'0');
-    document.getElementById('cd-m').textContent = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
-    document.getElementById('cd-s').textContent = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
-  }
-  tick(); setInterval(tick, 1000);
-
-  // ── State ─────────────────────────────────────────────────────────────────
+  /* ── State ─────────────────────────────────────────────────────────────── */
   let sessions  = [];
-  let pwd       = sessionStorage.getItem('sn_admin') || '';
+  let adminPwd  = sessionStorage.getItem('sn_admin') || '';
   let editingId = null;
   let showAll   = false;
-  let searchQuery = '';
-  const INITIAL_SHOW = 3;
+  let searchQ   = '';
 
-  // ── Load & render ─────────────────────────────────────────────────────────
+  /* ── Load ──────────────────────────────────────────────────────────────── */
   async function loadSessions() {
-    try { const r = await fetch(API); sessions = await r.json(); }
-    catch { sessions = []; }
-    renderSessions();
+    try {
+      const r = await fetch(API);
+      if (r.ok) sessions = await r.json();
+    } catch (_) { sessions = []; }
+    render();
   }
 
-  function renderSessions() {
+  /* ── Render ────────────────────────────────────────────────────────────── */
+  function render() {
     const now      = new Date();
-    const upcoming = sessions.filter(s => new Date(s.date + 'T19:00:00Z') >= now);
-    const past     = sessions.filter(s => new Date(s.date + 'T19:00:00Z') <  now).reverse(); // newest first
-
+    const upcoming = sessions.filter(s => new Date(s.date+'T19:00:00Z') >= now);
+    const past     = sessions.filter(s => new Date(s.date+'T19:00:00Z') <  now).reverse();
     renderUpcoming(upcoming);
     renderPast(past);
   }
 
   function renderUpcoming(list) {
-    const container = document.getElementById('upcomingList');
-    const empty     = document.getElementById('upcomingEmpty');
-    container.querySelectorAll('.session-item').forEach(el => el.remove());
-
-    if (!list.length) { empty.style.display = 'block'; return; }
-    empty.style.display = 'none';
+    const ul    = document.getElementById('upcomingList');
+    const empty = document.getElementById('upcomingEmpty');
+    ul.querySelectorAll('.session-card').forEach(el=>el.remove());
+    if (!list.length) { empty.style.display=''; return; }
+    empty.style.display='none';
 
     list.forEach(s => {
-      const sd   = new Date(s.date + 'T19:00:00Z');
-      const item = document.createElement('div');
-      item.className = 'session-item';
-      item.innerHTML = `
+      const sd   = new Date(s.date+'T19:00:00Z');
+      const card = document.createElement('div');
+      card.className='session-card';
+      const embedHtml = s.embedHtml ? sanitizeEmbed(s.embedHtml) : '';
+      const descHtml  = s.description ? sanitizeDesc(s.description.replace(/\n/g,'<br>')) : '';
+      card.innerHTML=`
         <div class="session-date">
           <strong>${sd.toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</strong>
           ${sd.toLocaleDateString('en-GB',{year:'numeric'})}
@@ -567,140 +469,122 @@ function esc(str) {
         <div>
           <div class="session-title">${esc(s.title)}</div>
           <div class="session-speaker mentions-target">🎤 ${esc(s.speaker)}</div>
-          ${s.embedHtml?`<div class="session-embed">${formatEmbedHtml(s.embedHtml)}</div>`:''}
-          ${s.description?`<div class="session-desc mentions-desc">${formatDescription(s.description)}</div>`:''}
+          ${embedHtml?`<div class="session-embed">${embedHtml}</div>`:''}
+          ${descHtml ?`<div class="session-desc mentions-desc">${descHtml}</div>` :''}
         </div>
-        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:.4rem">
+        <div>
           <span class="tag-up">Upcoming</span>
-          ${pwd?`<div style="display:flex;gap:.3rem">
+          ${adminPwd?`<div style="display:flex;gap:.3rem;margin-top:.4rem">
             <button class="icon-btn edit" data-id="${s.id}" title="Edit">✏️</button>
             <button class="icon-btn del"  data-id="${s.id}" title="Delete">🗑</button>
           </div>`:''}
         </div>`;
-      container.appendChild(item);
+      ul.appendChild(card);
     });
-    // Apply mentions rendering to presenter and description (async)
-    (async () => {
-      if (window.renderMentions) {
-        const targets = [...container.querySelectorAll('.mentions-target'), ...container.querySelectorAll('.mentions-desc')];
-        for (const el of targets) await window.renderMentions(el);
-      }
-    })();
-    bindActionButtons(container);
+    applyMentions(ul);
+    bindButtons(ul);
   }
 
   function renderPast(list) {
-    const tbody    = document.getElementById('pastBody');
-    const empty    = document.getElementById('pastEmpty');
-    const actHdr   = document.getElementById('actionsHeader');
-    const showMore = document.getElementById('showMoreBtn');
-    const countEl  = document.getElementById('searchCount');
-    tbody.querySelectorAll('tr:not(#pastEmpty)').forEach(el => el.remove());
+    const tbody   = document.getElementById('pastBody');
+    const empty   = document.getElementById('pastEmpty');
+    const actHdr  = document.getElementById('actHdr');
+    const showBtn = document.getElementById('showMoreBtn');
+    const countEl = document.getElementById('searchCount');
+    tbody.querySelectorAll('tr:not(#pastEmpty)').forEach(el=>el.remove());
 
-    // Filter by search query
-    const q        = searchQuery.toLowerCase();
+    const q        = searchQ.toLowerCase();
     const filtered = q
-      ? list.filter(s =>
-          s.title.toLowerCase().includes(q) ||
-          (s.description || '').toLowerCase().includes(q))
+      ? list.filter(s=>s.title.toLowerCase().includes(q)||(s.description||'').toLowerCase().includes(q))
       : list;
+    const toShow = (showAll||q) ? filtered : filtered.slice(0,INITIAL_SHOW);
+    const hidden  = filtered.length - toShow.length;
 
-    // Determine rows to show
-    const isSearching = !!q;
-    const toShow = (isSearching || showAll) ? filtered : filtered.slice(0, INITIAL_SHOW);
-    const hidden = filtered.length - toShow.length;
-
-    // Count label
-    if (isSearching) {
-      countEl.textContent = filtered.length
-        ? `${filtered.length} result${filtered.length === 1 ? '' : 's'}`
-        : 'No matches';
-    } else {
-      countEl.textContent = '';
-    }
-
-    // Show-more button
-    showMore.style.display = (!isSearching && hidden > 0) ? 'block' : 'none';
-    showMore.textContent   = showAll ? 'Show less ▴' : `Show ${hidden} more ▾`;
+    countEl.textContent = q ? (filtered.length ? `${filtered.length} result${filtered.length===1?'':'s'}` : 'No matches') : '';
+    showBtn.style.display = (!q && hidden>0) ? 'block' : 'none';
+    showBtn.textContent   = showAll ? 'Show less ▴' : `Show ${hidden} more ▾`;
 
     if (!filtered.length) {
-      empty.style.display = '';
-      empty.querySelector('td').textContent = isSearching ? 'No sessions match your search.' : 'No past talks yet.';
+      empty.style.display='';
+      empty.querySelector('td').textContent = q ? 'No sessions match your search.' : 'No past talks yet.';
       return;
     }
-    empty.style.display = 'none';
-    if (pwd) actHdr.style.display = '';
+    empty.style.display='none';
+    if (adminPwd) actHdr.style.display='';
 
     toShow.forEach(s => {
-      const tr = document.createElement('tr');
-      // Recording cell: embed Stream M365 if URL matches, else show Watch link
-      let recordingCell = '<span class="no-rec">—</span>';
+      const embedHtml = s.embedHtml ? sanitizeEmbed(s.embedHtml) : '';
+      const descHtml  = s.description ? sanitizeDesc(s.description.replace(/\n/g,'<br>')) : '';
+      let recCell = '<span class="no-rec">—</span>';
       if (s.recording) {
-        if (/safetynetfoundation\.sharepoint\.com\/_layouts\/15\/embed\.aspx/.test(s.recording)) {
-          recordingCell = `<iframe src="${esc(s.recording)}" width="280" height="158" frameborder="0" scrolling="no" allowfullscreen title="Session recording"></iframe>`;
-        } else {
-          recordingCell = `<a class="rec-link" href="${esc(s.recording)}" target="_blank" rel="noopener">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>
-            Watch
-          </a>`;
-        }
+        recCell=`<a class="rec-link" href="${esc(s.recording)}" target="_blank" rel="noopener"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none"/></svg>Watch</a>`;
       }
-      tr.innerHTML = `
+      const tr=document.createElement('tr');
+      tr.innerHTML=`
         <td class="td-date">${shortDate(s.date)}</td>
         <td class="td-title">${esc(s.title)}</td>
-        <td class="td-desc">${s.embedHtml?`<div class="session-embed">${formatEmbedHtml(s.embedHtml)}</div>`:''}<div class="mentions-desc">${formatDescription(s.description)}</div></td>
         <td class="td-speaker mentions-target">🎤 ${esc(s.speaker)}</td>
-        <td>${recordingCell}</td>
-        ${pwd?`<td><div class="admin-actions">
+        <td class="td-media">
+          ${embedHtml?`<div class="session-embed">${embedHtml}</div>`:''}
+          ${descHtml ?`<div class="mentions-desc" style="font-size:.82rem;color:var(--muted)">${descHtml}</div>`:''}
+        </td>
+        <td>${recCell}</td>
+        ${adminPwd?`<td><div class="act-cell">
           <button class="icon-btn edit" data-id="${s.id}" title="Edit">✏️</button>
           <button class="icon-btn del"  data-id="${s.id}" title="Delete">🗑</button>
         </div></td>`:'<td></td>'}`;
       tbody.appendChild(tr);
     });
-    // Apply mentions rendering to presenter and description in past talks (async)
+    applyMentions(tbody);
+    bindButtons(tbody);
+  }
+
+  /* Apply @mention rendering to all mention targets in a container */
+  function applyMentions(container) {
+    if (!window.renderMentions) return;
     (async () => {
-      if (window.renderMentions) {
-        const targets = [...tbody.querySelectorAll('.mentions-target'), ...tbody.querySelectorAll('.mentions-desc')];
-        for (const el of targets) await window.renderMentions(el);
-      }
+      for (const el of container.querySelectorAll('.mentions-target,.mentions-desc'))
+        await window.renderMentions(el);
     })();
-    bindActionButtons(tbody);
   }
 
-  function bindActionButtons(container) {
-    container.querySelectorAll('.icon-btn.edit').forEach(btn => {
-      btn.addEventListener('click', () => startEdit(Number(btn.dataset.id)));
-    });
-    container.querySelectorAll('.icon-btn.del').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        if (!confirm('Delete this session?')) return;
-        const r = await fetch(API, { method:'DELETE', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ id:Number(btn.dataset.id), password:pwd }) });
-        if (r.ok) loadSessions(); else alert('Delete failed.');
-      });
+  /* Delegate edit/delete clicks inside a container */
+  function bindButtons(container) {
+    container.addEventListener('click', e => {
+      const edit = e.target.closest('.icon-btn.edit');
+      const del  = e.target.closest('.icon-btn.del');
+      if (edit) startEdit(Number(edit.dataset.id));
+      if (del)  confirmDelete(Number(del.dataset.id));
     });
   }
 
-  document.getElementById('pastSearch').addEventListener('input', e => {
-    searchQuery = e.target.value.trim();
-    showAll     = false;
-    renderSessions();
-  });
+  /* ── Admin helpers ─────────────────────────────────────────────────────── */
+  function showForm() {
+    document.getElementById('adminGate').style.display='none';
+    document.getElementById('adminForm').style.display='block';
+    if (adminPwd) { document.getElementById('actHdr').style.display=''; render(); }
+  }
 
-  document.getElementById('showMoreBtn').addEventListener('click', () => {
-    showAll = !showAll;
-    renderSessions();
-  });
+  function showGate() {
+    document.getElementById('adminGate').style.display='';
+    document.getElementById('adminForm').style.display='none';
+  }
 
-  // ── Edit mode ─────────────────────────────────────────────────────────────
+  function resetForm() {
+    editingId=null;
+    ['f-id','f-date','f-title','f-speaker','f-desc','f-embed','f-rec']
+      .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+    document.getElementById('editBanner').classList.remove('show');
+    document.getElementById('formTitle').textContent = 'Add new session';
+    document.getElementById('saveBtn').textContent   = 'Add session';
+    document.getElementById('saveMsg').textContent   = '';
+    document.getElementById('saveMsg').className     = 'admin-msg';
+  }
+
   function startEdit(id) {
-    const s = sessions.find(s => s.id === id);
+    const s = sessions.find(s=>s.id===id);
     if (!s) return;
-    editingId = id;
-
-    // Open panel if not open
-    document.getElementById('adminPanel').classList.add('open');
-    showForm();
-
+    editingId=id;
     document.getElementById('f-id').value      = s.id;
     document.getElementById('f-date').value    = s.date;
     document.getElementById('f-title').value   = s.title;
@@ -708,125 +592,93 @@ function esc(str) {
     document.getElementById('f-desc').value    = s.description || '';
     document.getElementById('f-embed').value   = s.embedHtml   || '';
     document.getElementById('f-rec').value     = s.recording   || '';
-
-    document.getElementById('formTitle').textContent  = 'Edit session';
-    document.getElementById('saveSession').textContent = 'Save changes';
     document.getElementById('editBanner').classList.add('show');
-    document.getElementById('f-date').scrollIntoView({ behavior:'smooth', block:'center' });
+    document.getElementById('formTitle').textContent = 'Edit session';
+    document.getElementById('saveBtn').textContent   = 'Save changes';
+    document.getElementById('adminPanel').classList.add('open');
+    showForm();
+    document.getElementById('adminForm').scrollIntoView({behavior:'smooth',block:'start'});
   }
 
-  function resetForm() {
-    editingId = null;
-    document.getElementById('f-id').value      = '';
-    document.getElementById('f-date').value    = nextMeetingUTC().toISOString().split('T')[0];
-    document.getElementById('f-title').value   = '';
-    document.getElementById('f-speaker').value = '';
-    document.getElementById('f-desc').value    = '';
-    document.getElementById('f-embed').value   = '';
-    document.getElementById('f-rec').value     = '';
-    document.getElementById('formTitle').textContent   = 'Add new session';
-    document.getElementById('saveSession').textContent = 'Add session';
-    document.getElementById('editBanner').classList.remove('show');
-    document.getElementById('addMsg').textContent = '';
+  async function confirmDelete(id) {
+    if (!confirm('Delete this session? This cannot be undone.')) return;
+    try {
+      const r = await fetch(API,{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,password:adminPwd})});
+      if ((await r.json()).ok) loadSessions();
+    } catch (_) {}
   }
 
-  document.getElementById('cancelEdit').addEventListener('click', e => { e.preventDefault(); resetForm(); });
+  /* ── Admin events ──────────────────────────────────────────────────────── */
+  document.getElementById('adminToggle').addEventListener('click',()=>{
+    document.getElementById('adminPanel').classList.toggle('open');
+    if (adminPwd) showForm();
+  });
 
-  // ── Save (add or edit) ────────────────────────────────────────────────────
-  document.getElementById('saveSession').addEventListener('click', async () => {
+  document.getElementById('adminLogin').addEventListener('click', async ()=>{
+    const pwd = document.getElementById('adminPwd').value;
+    const err = document.getElementById('loginErr');
+    try {
+      const r = await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({_check:true,password:pwd})});
+      if (r.ok && (await r.json()).ok) {
+        adminPwd=pwd; sessionStorage.setItem('sn_admin',pwd);
+        err.textContent=''; showForm();
+      } else { err.textContent='Wrong password.'; }
+    } catch (_) { err.textContent='Could not connect.'; }
+  });
+
+  document.getElementById('adminPwd').addEventListener('keydown',e=>{ if(e.key==='Enter') document.getElementById('adminLogin').click(); });
+
+  document.getElementById('lockBtn').addEventListener('click',()=>{
+    adminPwd=''; sessionStorage.removeItem('sn_admin');
+    resetForm(); showGate(); render();
+  });
+
+  document.getElementById('cancelEdit').addEventListener('click',e=>{ e.preventDefault(); resetForm(); });
+
+  document.getElementById('saveBtn').addEventListener('click', async ()=>{
     const date    = document.getElementById('f-date').value;
     const title   = document.getElementById('f-title').value.trim();
     const speaker = document.getElementById('f-speaker').value.trim();
     const desc    = document.getElementById('f-desc').value.trim();
     const embed   = document.getElementById('f-embed').value.trim();
     const rec     = document.getElementById('f-rec').value.trim();
-    const msg     = document.getElementById('addMsg');
+    const msg     = document.getElementById('saveMsg');
 
-    if (!date || !title || !speaker) {
-      msg.className = 'admin-msg err';
-      msg.textContent = 'Date, title and presenter are required.';
-      return;
+    if (!date||!title||!speaker) {
+      msg.className='admin-msg err'; msg.textContent='Date, title and presenter are required.'; return;
     }
 
-    const isEdit = !!editingId;
-    const method = isEdit ? 'PUT' : 'POST';
-    // Always send id for edit, and log payload for debugging
-    const payload = { date, title, speaker, description:desc, embedHtml:embed, recording:rec, password:pwd };
-    if (isEdit) {
-      payload.id = editingId;
-      console.log('Editing session:', payload);
-    }
+    const isEdit  = !!editingId;
+    // Base64-encode the embed HTML so it passes cleanly through any WAF / proxy
+    const payload = {date,title,speaker,description:desc,embedB64:embed?toB64(embed):'',recording:rec,password:adminPwd};
+    if (isEdit) payload.id=editingId;
 
     try {
-      const r = await fetch(API, { method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
-      const data = await r.json().catch(() => ({}));
-      if (r.ok && data.ok) {
-        msg.className   = 'admin-msg ok';
-        msg.textContent = isEdit ? '✓ Session updated.' : '✓ Session added.';
-        resetForm();
-        await loadSessions();
-        setTimeout(() => { msg.textContent = ''; }, 3000);
+      const r    = await fetch(API,{method:isEdit?'PUT':'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+      const data = await r.json().catch(()=>({}));
+      if (r.ok&&data.ok) {
+        msg.className='admin-msg ok'; msg.textContent=isEdit?'✓ Session updated.':'✓ Session added.';
+        resetForm(); await loadSessions(); setTimeout(()=>{msg.textContent='';},3000);
       } else {
-        msg.className = 'admin-msg err';
-        msg.textContent = (data && data.error) ? (isEdit ? `Update failed: ${data.error}` : `Add failed: ${data.error}`) : (isEdit ? 'Update failed.' : 'Add failed.');
-        console.error('Session save error:', data);
+        msg.className='admin-msg err'; msg.textContent=data.error||(isEdit?'Update failed.':'Add failed.');
       }
-    } catch (e) {
-      msg.className = 'admin-msg err';
-      msg.textContent = 'Network or server error.';
-      console.error('Session save exception:', e);
-    }
+    } catch (_) { msg.className='admin-msg err'; msg.textContent='Network error — please try again.'; }
   });
 
-  // ── Admin panel ───────────────────────────────────────────────────────────
-  const panel = document.getElementById('adminPanel');
-  const gate  = document.getElementById('adminGate');
-  const form  = document.getElementById('adminForm');
-
-  document.getElementById('adminToggle').addEventListener('click', () => {
-    panel.classList.toggle('open');
-    if (pwd) showForm();
+  document.getElementById('pastSearch').addEventListener('input',e=>{
+    searchQ=e.target.value.trim(); showAll=false; render();
   });
 
-  document.getElementById('adminLogin').addEventListener('click', async () => {
-    const p = document.getElementById('adminPwd').value.trim();
-    if (!p) return;
-    const r = await fetch(API, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({ password:p, _check:true }) });
-    if (r.status === 200) {
-      pwd = p; sessionStorage.setItem('sn_admin', p);
-      showForm(); renderSessions();
-    } else if (r.status === 401 || r.status === 400) {
-      document.getElementById('loginErr').textContent = 'Incorrect password.';
-    } else {
-      document.getElementById('loginErr').textContent = 'Could not connect to server.';
-    }
+  document.getElementById('showMoreBtn').addEventListener('click',()=>{
+    showAll=!showAll; render();
   });
 
-  document.getElementById('adminPwd').addEventListener('keydown', e => {
-    if (e.key === 'Enter') document.getElementById('adminLogin').click();
-  });
-
-  document.getElementById('adminLogout').addEventListener('click', () => {
-    pwd = ''; sessionStorage.removeItem('sn_admin');
-    panel.classList.remove('open');
-    gate.style.display = 'block';
-    form.style.display = 'none';
-    resetForm();
-    renderSessions();
-  });
-
-  function showForm() {
-    gate.style.display = 'none';
-    form.style.display = 'block';
-    if (!editingId) document.getElementById('f-date').value = nextMeetingUTC().toISOString().split('T')[0];
-  }
-
-  // ── Init ──────────────────────────────────────────────────────────────────
-  if (pwd) showForm();
+  /* ── Init ──────────────────────────────────────────────────────────────── */
+  if (adminPwd) showForm();
   loadSessions();
+
 })();
 </script>
 <script src="assets/mentions.js"></script>
-
 </body>
 </html>
